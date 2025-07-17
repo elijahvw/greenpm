@@ -25,3 +25,9 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_triggers" {
+  description = "Enable Cloud Build triggers"
+  type        = bool
+  default     = false
+}

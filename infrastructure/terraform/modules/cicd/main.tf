@@ -34,7 +34,7 @@ resource "google_project_iam_member" "cloudbuild_secret_accessor" {
 
 # GitHub connection (requires manual setup)
 resource "google_cloudbuild_trigger" "backend_dev" {
-  count       = var.environment == "dev" ? 1 : 0
+  count       = var.enable_triggers && var.environment == "dev" ? 1 : 0
   name        = "${var.app_name}-backend-dev-trigger"
   project     = var.project_id
   description = "Trigger for backend development builds"
@@ -59,7 +59,7 @@ resource "google_cloudbuild_trigger" "backend_dev" {
 }
 
 resource "google_cloudbuild_trigger" "frontend_dev" {
-  count       = var.environment == "dev" ? 1 : 0
+  count       = var.enable_triggers && var.environment == "dev" ? 1 : 0
   name        = "${var.app_name}-frontend-dev-trigger"
   project     = var.project_id
   description = "Trigger for frontend development builds"
@@ -84,7 +84,7 @@ resource "google_cloudbuild_trigger" "frontend_dev" {
 }
 
 resource "google_cloudbuild_trigger" "backend_prod" {
-  count       = var.environment == "prod" ? 1 : 0
+  count       = var.enable_triggers && var.environment == "prod" ? 1 : 0
   name        = "${var.app_name}-backend-prod-trigger"
   project     = var.project_id
   description = "Trigger for backend production builds"
@@ -109,7 +109,7 @@ resource "google_cloudbuild_trigger" "backend_prod" {
 }
 
 resource "google_cloudbuild_trigger" "frontend_prod" {
-  count       = var.environment == "prod" ? 1 : 0
+  count       = var.enable_triggers && var.environment == "prod" ? 1 : 0
   name        = "${var.app_name}-frontend-prod-trigger"
   project     = var.project_id
   description = "Trigger for frontend production builds"

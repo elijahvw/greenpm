@@ -126,27 +126,4 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
-# IAM for Cloud Run to access buckets
-resource "google_storage_bucket_iam_member" "documents_object_admin" {
-  bucket = google_storage_bucket.documents.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.app_name}-${var.environment}-backend@${var.project_id}.iam.gserviceaccount.com"
-}
-
-resource "google_storage_bucket_iam_member" "property_images_object_admin" {
-  bucket = google_storage_bucket.property_images.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.app_name}-${var.environment}-backend@${var.project_id}.iam.gserviceaccount.com"
-}
-
-resource "google_storage_bucket_iam_member" "maintenance_images_object_admin" {
-  bucket = google_storage_bucket.maintenance_images.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.app_name}-${var.environment}-backend@${var.project_id}.iam.gserviceaccount.com"
-}
-
-resource "google_storage_bucket_iam_member" "backups_object_admin" {
-  bucket = google_storage_bucket.backups.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${var.app_name}-${var.environment}-backend@${var.project_id}.iam.gserviceaccount.com"
-}
+# IAM resources moved to separate storage_iam module to handle Cloud Run dependency

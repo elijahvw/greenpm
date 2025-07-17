@@ -114,13 +114,13 @@ deploy_infrastructure() {
     terraform init
     
     # Plan deployment
-    terraform plan -var="environment=$env"
+    terraform plan
     
     # Ask for confirmation
     read -p "Do you want to apply these changes? (y/N): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        terraform apply -var="environment=$env" -auto-approve
+        terraform apply -auto-approve
         log_success "Infrastructure deployed for $env environment"
     else
         log_warning "Deployment cancelled for $env environment"

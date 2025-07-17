@@ -25,6 +25,11 @@ output "vpc_connector_name" {
   value       = google_vpc_access_connector.connector.name
 }
 
+output "vpc_connector_id" {
+  description = "VPC connector full resource ID for Cloud Run v2"
+  value       = "projects/${var.project_id}/locations/${var.region}/connectors/${google_vpc_access_connector.connector.name}"
+}
+
 output "vpc_connector_self_link" {
   description = "VPC connector self link"
   value       = google_vpc_access_connector.connector.self_link

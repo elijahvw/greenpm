@@ -119,16 +119,31 @@ module "cloud_run" {
   environment    = var.environment
   app_name       = local.app_name
   labels         = local.common_labels
-  vpc_connector  = module.vpc.vpc_connector_name
+  vpc_connector  = module.vpc.vpc_connector_id
   database_url   = module.database.connection_name
   
   depends_on = [
     google_project_service.required_apis,
     module.vpc,
     module.database,
-    module.storage,
     module.secrets
   ]
+}
+
+# Storage IAM - separate module to handle Cloud Run dependency
+module "storage_iam" {
+  source = "./modules/storage_iam"
+  
+  project_id                    = var.project_id
+  backend_service_account_email = module.cloud_run.backend_service_account
+  storage_buckets = {
+    documents          = module.storage.documents_bucket_name
+    property_images    = module.storage.property_images_bucket_name
+    maintenance_images = module.storage.maintenance_images_bucket_name
+    backups           = module.storage.backups_bucket_name
+  }
+  
+  depends_on = [module.cloud_run, module.storage]
 }
 
 # Load Balancer
