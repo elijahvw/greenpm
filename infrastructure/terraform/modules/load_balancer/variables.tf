@@ -36,6 +36,16 @@ variable "frontend_service_url" {
   type        = string
 }
 
+variable "backend_service_name" {
+  description = "Backend Cloud Run service name"
+  type        = string
+}
+
+variable "frontend_service_name" {
+  description = "Frontend Cloud Run service name"
+  type        = string
+}
+
 variable "domain_name" {
   description = "Domain name for SSL certificate"
   type        = string

@@ -107,7 +107,7 @@ class Application(Base):
     reviewed_at = Column(DateTime(timezone=True))
     
     # Relationships
-    property = relationship("Property", back_populates="applications")
+    property_rel = relationship("Property", back_populates="applications")
     applicant = relationship("User", back_populates="applications")
     documents = relationship("ApplicationDocument", back_populates="application", cascade="all, delete-orphan")
     application_fee_payment = relationship("Payment")

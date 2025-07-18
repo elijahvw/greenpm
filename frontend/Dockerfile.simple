@@ -1,0 +1,13 @@
+FROM nginx:alpine
+
+# Copy the simple index.html
+COPY public/index.html /usr/share/nginx/html/index.html
+
+# Copy nginx configuration
+COPY nginx.simple.conf /etc/nginx/nginx.conf
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

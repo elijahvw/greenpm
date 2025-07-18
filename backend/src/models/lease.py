@@ -2,7 +2,7 @@
 Green PM - Lease Models
 """
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Numeric, ForeignKey, Enum as SQLEnum, Date
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship as sa_relationship
 from sqlalchemy.sql import func
 from enum import Enum
 import uuid
@@ -76,13 +76,11 @@ class Lease(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    property = relationship("Property", back_populates="leases")
-    tenant = relationship("User", back_populates="leases", foreign_keys=[tenant_id])
-    landlord = relationship("User", foreign_keys=[landlord_id])
-    documents = relationship("LeaseDocument", back_populates="lease", cascade="all, delete-orphan")
-    payments = relationship("Payment", back_populates="lease")
-    parent_lease = relationship("Lease", remote_side=[id])
-    renewal_leases = relationship("Lease", back_populates="parent_lease")
+    property_rel = sa_relationship("Property", back_populates="leases")
+    tenant = sa_relationship("User", back_populates="leases", foreign_keys=[tenant_id])
+    landlord = sa_relationship("User", foreign_keys=[landlord_id])
+    documents = sa_relationship("LeaseDocument", back_populates="lease", cascade="all, delete-orphan")
+    payments = sa_relationship("Payment", back_populates="lease")
     
     @property
     def is_active(self) -> bool:
@@ -134,7 +132,7 @@ class LeaseDocument(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    lease = relationship("Lease", back_populates="documents")
+    lease = sa_relationship("Lease", back_populates="documents")
     
     def __repr__(self):
         return f"<LeaseDocument(id={self.id}, lease_id={self.lease_id}, title='{self.title}')>"

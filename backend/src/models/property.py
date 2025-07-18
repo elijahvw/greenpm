@@ -134,7 +134,7 @@ class PropertyImage(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    property = relationship("Property", back_populates="images")
+    property_rel = relationship("Property", back_populates="images")
     
     def __repr__(self):
         return f"<PropertyImage(id={self.id}, property_id={self.property_id}, filename='{self.filename}')>"
@@ -154,7 +154,7 @@ class PropertyAmenity(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    property = relationship("Property", back_populates="amenities")
+    property_rel = relationship("Property", back_populates="amenities")
     
     def __repr__(self):
         return f"<PropertyAmenity(id={self.id}, property_id={self.property_id}, name='{self.name}')>"

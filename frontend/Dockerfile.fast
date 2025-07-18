@@ -1,0 +1,14 @@
+# Simple nginx with built files
+FROM nginx:alpine
+
+# Copy built files (we'll build locally)
+COPY build /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.working.conf /etc/nginx/nginx.conf
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

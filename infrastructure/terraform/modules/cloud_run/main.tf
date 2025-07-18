@@ -52,7 +52,7 @@ resource "google_cloud_run_v2_service" "backend" {
     }
 
     containers {
-      image = "gcr.io/${var.project_id}/${var.app_name}-backend:latest"
+      image = "gcr.io/${var.project_id}/${var.app_name}-${var.environment}-backend:latest"
       
       ports {
         container_port = 8000
@@ -104,46 +104,6 @@ resource "google_cloud_run_v2_service" "backend" {
           }
         }
       }
-
-      env {
-        name = "STRIPE_SECRET_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = "${var.app_name}-${var.environment}-stripe-secret-key"
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name = "TWILIO_ACCOUNT_SID"
-        value_source {
-          secret_key_ref {
-            secret  = "${var.app_name}-${var.environment}-twilio-account-sid"
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name = "TWILIO_AUTH_TOKEN"
-        value_source {
-          secret_key_ref {
-            secret  = "${var.app_name}-${var.environment}-twilio-auth-token"
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name = "SENDGRID_API_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = "${var.app_name}-${var.environment}-sendgrid-api-key"
-            version = "latest"
-          }
-        }
-      }
     }
   }
 
@@ -170,7 +130,7 @@ resource "google_cloud_run_v2_service" "frontend" {
     }
 
     containers {
-      image = "gcr.io/${var.project_id}/${var.app_name}-frontend:latest"
+      image = "gcr.io/${var.project_id}/${var.app_name}-${var.environment}-frontend:latest"
       
       ports {
         container_port = 3000
@@ -184,33 +144,13 @@ resource "google_cloud_run_v2_service" "frontend" {
       }
 
       env {
-        name  = "REACT_APP_API_URL"
-        value = google_cloud_run_v2_service.backend.uri
-      }
-
-      env {
-        name  = "REACT_APP_ENVIRONMENT"
+        name  = "ENVIRONMENT"
         value = var.environment
       }
 
       env {
-        name = "REACT_APP_STRIPE_PUBLISHABLE_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = "${var.app_name}-${var.environment}-stripe-publishable-key"
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name = "REACT_APP_FIREBASE_CONFIG"
-        value_source {
-          secret_key_ref {
-            secret  = "${var.app_name}-${var.environment}-firebase-config"
-            version = "latest"
-          }
-        }
+        name  = "PROJECT_ID"
+        value = var.project_id
       }
     }
   }

@@ -26,11 +26,14 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Green PM API...")
     
-    # Create database tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Create database tables if database is configured
+    if engine:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created successfully")
+    else:
+        logger.warning("Database not configured - running without database")
     
-    logger.info("Database tables created successfully")
     yield
     
     # Shutdown
@@ -91,9 +94,11 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
         "src.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=settings.ENVIRONMENT == "dev"
     )

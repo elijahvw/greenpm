@@ -51,7 +51,7 @@ class MessageThread(Base):
     # Relationships
     participant1 = relationship("User", foreign_keys=[participant1_id])
     participant2 = relationship("User", foreign_keys=[participant2_id])
-    property = relationship("Property")
+    property_rel = relationship("Property")
     lease = relationship("Lease")
     maintenance_request = relationship("MaintenanceRequest")
     messages = relationship("Message", back_populates="thread", cascade="all, delete-orphan")

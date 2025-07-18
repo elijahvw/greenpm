@@ -61,7 +61,7 @@ resource "google_compute_backend_service" "api" {
     group = google_compute_region_network_endpoint_group.api.id
   }
 
-  health_checks = [google_compute_health_check.api.id]
+  # Health checks are not supported with serverless backends
 }
 
 # Backend service for frontend
@@ -75,7 +75,7 @@ resource "google_compute_backend_service" "frontend" {
     group = google_compute_region_network_endpoint_group.frontend.id
   }
 
-  health_checks = [google_compute_health_check.frontend.id]
+  # Health checks are not supported with serverless backends
 }
 
 # Network Endpoint Groups
@@ -86,7 +86,7 @@ resource "google_compute_region_network_endpoint_group" "api" {
   region                = var.region
 
   cloud_run {
-    service = replace(var.backend_service_url, "https://", "")
+    service = var.backend_service_name
   }
 }
 
@@ -97,40 +97,11 @@ resource "google_compute_region_network_endpoint_group" "frontend" {
   region                = var.region
 
   cloud_run {
-    service = replace(var.frontend_service_url, "https://", "")
+    service = var.frontend_service_name
   }
 }
 
-# Health checks
-resource "google_compute_health_check" "api" {
-  name    = "${var.app_name}-${var.environment}-api-health-check"
-  project = var.project_id
-
-  http_health_check {
-    request_path = "/health"
-    port         = 8000
-  }
-
-  check_interval_sec  = 30
-  timeout_sec         = 5
-  healthy_threshold   = 2
-  unhealthy_threshold = 3
-}
-
-resource "google_compute_health_check" "frontend" {
-  name    = "${var.app_name}-${var.environment}-frontend-health-check"
-  project = var.project_id
-
-  http_health_check {
-    request_path = "/"
-    port         = 3000
-  }
-
-  check_interval_sec  = 30
-  timeout_sec         = 5
-  healthy_threshold   = 2
-  unhealthy_threshold = 3
-}
+# Health checks are not needed for serverless backends
 
 # URL Map
 resource "google_compute_url_map" "default" {

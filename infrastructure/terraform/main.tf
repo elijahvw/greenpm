@@ -150,13 +150,16 @@ module "storage_iam" {
 module "load_balancer" {
   source = "./modules/load_balancer"
   
-  project_id          = var.project_id
-  region              = var.region
-  environment         = var.environment
-  app_name            = local.app_name
-  labels              = local.common_labels
-  backend_service_url = module.cloud_run.backend_url
+  project_id           = var.project_id
+  region               = var.region
+  environment          = var.environment
+  app_name             = local.app_name
+  labels               = local.common_labels
+  backend_service_url  = module.cloud_run.backend_url
   frontend_service_url = module.cloud_run.frontend_url
+  backend_service_name = module.cloud_run.backend_service_name
+  frontend_service_name = module.cloud_run.frontend_service_name
+  domain_name          = var.domain_name
   
   depends_on = [google_project_service.required_apis, module.cloud_run]
 }

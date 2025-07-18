@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Green PM - Modern Property Management Platform"
+    />
+    <title>Green PM - Property Management</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div id="root">
+      <div class="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p class="text-gray-600">Loading Green PM...</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      // Login Component
+      const LoginForm = ({ onLogin }) => {
+        const [email, setEmail] = useState('');
+        const [password, setPassword] = useState('');
+        const [showCredentials, setShowCredentials] = useState(false);
+
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900">Green PM</h1>
+                <p className="text-gray-600 mt-2">Property Management Platform</p>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                onLogin(email, password);
+              }}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  />
+                </div>
+                
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Sign In
+                </button>
+              </form>
+              
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowCredentials(!showCredentials)}
+                  className="text-green-600 hover:text-green-800 text-sm underline"
+                >
+                  Show Demo Credentials
+                </button>
+              </div>
+              
+              {showCredentials && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-md text-sm">
+                  <p className="font-semibold mb-2">Demo Accounts:</p>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="font-medium">Master Admin:</p>
+                      <p>admin@greenpm.com / GreenPM2024!</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Sample Landlord:</p>
+                      <p>landlord@example.com / landlord123</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Sample Tenant:</p>
+                      <p>tenant@example.com / tenant123</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      // Dashboard Component
+      const Dashboard = ({ user, onLogout }) => {
+        const [activeTab, setActiveTab] = useState('overview');
+
+        const renderContent = () => {
+          switch (activeTab) {
+            case 'overview':
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Total Properties</h3>
+                    <p className="text-3xl font-bold text-green-600">12</p>
+                    <p className="text-sm text-gray-600 mt-2">+2 from last month</p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Leases</h3>
+                    <p className="text-3xl font-bold text-blue-600">28</p>
+                    <p className="text-sm text-gray-600 mt-2">3 expiring soon</p>
+                  </div>
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Monthly Revenue</h3>
+                    <p className="text-3xl font-bold text-purple-600">$45,200</p>
+                    <p className="text-sm text-gray-600 mt-2">+8% from last month</p>
+                  </div>
+                </div>
+              );
+            case 'properties':
+              return (
+                <div className="bg-white rounded-lg shadow">
+                  <div className="p-6 border-b">
+                    <h3 className="text-lg font-semibold text-gray-900">Properties</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">Sunset Apartments</h4>
+                          <p className="text-sm text-gray-600">123 Main St, City, State</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-green-600">$2,500/month</p>
+                          <p className="text-sm text-gray-600">4 units</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">Green Valley Condos</h4>
+                          <p className="text-sm text-gray-600">456 Oak Ave, City, State</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-green-600">$1,800/month</p>
+                          <p className="text-sm text-gray-600">2 units</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            case 'tenants':
+              return (
+                <div className="bg-white rounded-lg shadow">
+                  <div className="p-6 border-b">
+                    <h3 className="text-lg font-semibold text-gray-900">Tenants</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">John Smith</h4>
+                          <p className="text-sm text-gray-600">john.smith@email.com</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">Unit 101</p>
+                          <p className="text-sm text-green-600">Rent Current</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">Sarah Johnson</h4>
+                          <p className="text-sm text-gray-600">sarah.j@email.com</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">Unit 205</p>
+                          <p className="text-sm text-yellow-600">Late Payment</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            case 'maintenance':
+              return (
+                <div className="bg-white rounded-lg shadow">
+                  <div className="p-6 border-b">
+                    <h3 className="text-lg font-semibold text-gray-900">Maintenance Requests</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">Leaky Faucet</h4>
+                          <p className="text-sm text-gray-600">Unit 101 - Kitchen</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-red-600">High Priority</p>
+                          <p className="text-sm text-gray-600">2 days ago</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">AC Not Working</h4>
+                          <p className="text-sm text-gray-600">Unit 205 - Living Room</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-yellow-600">Medium Priority</p>
+                          <p className="text-sm text-gray-600">1 day ago</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            case 'settings':
+              return (
+                <div className="bg-white rounded-lg shadow">
+                  <div className="p-6 border-b">
+                    <h3 className="text-lg font-semibold text-gray-900">Settings</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="text-md font-medium text-gray-900 mb-4">Account Information</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                            <input type="text" value={user.firstName} className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input type="text" value={user.lastName} className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" value={user.email} className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                            <input type="text" value={user.role} className="w-full px-3 py-2 border border-gray-300 rounded-md" readOnly />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            default:
+              return <div>Select a tab</div>;
+          }
+        };
+
+        return (
+          <div className="min-h-screen bg-gray-50">
+            <header className="bg-white shadow-sm border-b">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-16">
+                  <div className="flex items-center">
+                    <h1 className="text-2xl font-bold text-gray-900">Green PM</h1>
+                    <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-700">Welcome, {user.firstName}!</span>
+                    <button
+                      onClick={onLogout}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <nav className="bg-white shadow-sm">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex space-x-8">
+                  {['overview', 'properties', 'tenants', 'maintenance', 'settings'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                        activeTab === tab
+                          ? 'border-green-500 text-green-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </nav>
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {renderContent()}
+            </main>
+          </div>
+        );
+      };
+
+      // Main App Component
+      const App = () => {
+        const [isLoggedIn, setIsLoggedIn] = useState(false);
+        const [user, setUser] = useState(null);
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState('');
+
+        const handleLogin = async (email, password) => {
+          setLoading(true);
+          setError('');
+          
+          try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Mock user data based on email
+            let mockUser;
+            if (email === 'admin@greenpm.com') {
+              mockUser = {
+                id: '1',
+                email: 'admin@greenpm.com',
+                firstName: 'Green PM',
+                lastName: 'Administrator',
+                role: 'admin'
+              };
+            } else if (email === 'landlord@example.com') {
+              mockUser = {
+                id: '2',
+                email: 'landlord@example.com',
+                firstName: 'John',
+                lastName: 'Landlord',
+                role: 'landlord'
+              };
+            } else if (email === 'tenant@example.com') {
+              mockUser = {
+                id: '3',
+                email: 'tenant@example.com',
+                firstName: 'Jane',
+                lastName: 'Tenant',
+                role: 'tenant'
+              };
+            } else {
+              throw new Error('Invalid credentials');
+            }
+            
+            setUser(mockUser);
+            setIsLoggedIn(true);
+          } catch (err) {
+            setError('Invalid credentials. Please try the demo accounts.');
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        const handleLogout = () => {
+          setIsLoggedIn(false);
+          setUser(null);
+        };
+
+        if (loading) {
+          return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Signing you in...</p>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="App">
+            {isLoggedIn ? (
+              <Dashboard user={user} onLogout={handleLogout} />
+            ) : (
+              <LoginForm onLogin={handleLogin} />
+            )}
+            {error && (
+              <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // Render the app
+      ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+  </body>
+</html>

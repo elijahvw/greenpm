@@ -86,7 +86,7 @@ class MaintenanceRequest(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    property = relationship("Property", back_populates="maintenance_requests")
+    property_rel = relationship("Property", back_populates="maintenance_requests")
     tenant = relationship("User", back_populates="maintenance_requests", foreign_keys=[tenant_id])
     assigned_to = relationship("User", foreign_keys=[assigned_to_id])
     images = relationship("MaintenanceImage", back_populates="maintenance_request", cascade="all, delete-orphan")

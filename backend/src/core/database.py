@@ -2,28 +2,53 @@
 Green PM - Database Configuration
 """
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import MetaData
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 import logging
 
 from src.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Database engine
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.ENVIRONMENT == "dev",
-    pool_pre_ping=True,
-    pool_recycle=300,
-)
+# Async Database engine
+if settings.DATABASE_URL:
+    # Convert PostgreSQL URL to async format for async operations
+    async_url = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+    engine = create_async_engine(
+        async_url,
+        echo=settings.ENVIRONMENT == "dev",
+        pool_pre_ping=True,
+        pool_recycle=300,
+    )
+    
+    # Sync engine for migrations
+    sync_engine = create_engine(
+        settings.DATABASE_URL,
+        echo=settings.ENVIRONMENT == "dev",
+        pool_pre_ping=True,
+        pool_recycle=300,
+    )
+else:
+    # For development/testing without database
+    engine = None
+    sync_engine = None
 
 # Session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+if engine:
+    AsyncSessionLocal = async_sessionmaker(
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+    
+    # Sync session for migrations
+    SessionLocal = sessionmaker(
+        sync_engine,
+        expire_on_commit=False
+    )
+else:
+    AsyncSessionLocal = None
+    SessionLocal = None
 
 # Base class for models
 class Base(DeclarativeBase):
@@ -39,6 +64,9 @@ class Base(DeclarativeBase):
 
 # Dependency to get database session
 async def get_db():
+    if not AsyncSessionLocal:
+        raise RuntimeError("Database not configured")
+    
     async with AsyncSessionLocal() as session:
         try:
             yield session

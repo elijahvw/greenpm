@@ -34,7 +34,7 @@ class AuditLog(Base):
     
     # Additional context
     description = Column(Text)
-    metadata = Column(JSON)  # Additional contextual information
+    context_metadata = Column(JSON)  # Additional contextual information
     
     # Status
     success = Column(String(10), default=True)  # Whether the action was successful

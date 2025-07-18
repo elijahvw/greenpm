@@ -84,7 +84,7 @@ class Payment(Base):
     # Relationships
     user = relationship("User", back_populates="payments")
     lease = relationship("Lease", back_populates="payments")
-    property = relationship("Property")
+    property_rel = relationship("Property")
     
     @property
     def is_completed(self) -> bool:
