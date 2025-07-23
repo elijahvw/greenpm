@@ -16,18 +16,35 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest']
 
-  # Skip migrations for now - will be handled by the container startup
+  # Deploy to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "Database migrations will be handled by the container startup"
-        echo "Deployment will be handled by Terraform"
+        echo "Deploying ${_SERVICE_NAME} to ${_REGION} for ${_ENVIRONMENT} environment"
+        gcloud run deploy ${_SERVICE_NAME} \
+          --image gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 8000 \
+          --memory 1Gi \
+          --cpu 1 \
+          --max-instances 10 \
+          --timeout 300 \
+          --set-env-vars ENVIRONMENT=${_ENVIRONMENT} \
+          --set-secrets DATABASE_URL=greenpm-${_ENVIRONMENT}-db-url:latest \
+          --set-secrets JWT_SECRET=greenpm-${_ENVIRONMENT}-jwt-secret:latest \
+          --set-secrets APP_SECRET_KEY=greenpm-${_ENVIRONMENT}-app-secret-key:latest \
+          --set-secrets ENCRYPTION_KEY=greenpm-${_ENVIRONMENT}-encryption-key:latest \
+          --service-account greenpm-${_ENVIRONMENT}-backend@$PROJECT_ID.iam.gserviceaccount.com
 
 # Substitutions
 substitutions:
   _SERVICE_NAME: 'greenpm-dev-backend'
+  _ENVIRONMENT: 'dev'
+  _REGION: 'us-central1'
 
 # Options
 options:

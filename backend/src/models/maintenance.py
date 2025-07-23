@@ -10,30 +10,30 @@ import uuid
 from src.core.database import Base
 
 class MaintenanceStatus(str, Enum):
-    SUBMITTED = "submitted"
-    ACKNOWLEDGED = "acknowledged"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-    ON_HOLD = "on_hold"
+    SUBMITTED = "SUBMITTED"
+    ACKNOWLEDGED = "ACKNOWLEDGED"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+    ON_HOLD = "ON_HOLD"
 
 class MaintenancePriority(str, Enum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    EMERGENCY = "emergency"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    EMERGENCY = "EMERGENCY"
 
 class MaintenanceCategory(str, Enum):
-    PLUMBING = "plumbing"
-    ELECTRICAL = "electrical"
-    HVAC = "hvac"
-    APPLIANCES = "appliances"
-    FLOORING = "flooring"
-    PAINTING = "painting"
-    PEST_CONTROL = "pest_control"
-    SECURITY = "security"
-    LANDSCAPING = "landscaping"
-    OTHER = "other"
+    PLUMBING = "PLUMBING"
+    ELECTRICAL = "ELECTRICAL"
+    HVAC = "HVAC"
+    APPLIANCES = "APPLIANCES"
+    FLOORING = "FLOORING"
+    PAINTING = "PAINTING"
+    PEST_CONTROL = "PEST_CONTROL"
+    SECURITY = "SECURITY"
+    LANDSCAPING = "LANDSCAPING"
+    OTHER = "OTHER"
 
 class MaintenanceRequest(Base):
     __tablename__ = "maintenance_requests"

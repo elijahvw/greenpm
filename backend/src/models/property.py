@@ -10,20 +10,20 @@ import uuid
 from src.core.database import Base
 
 class PropertyType(str, Enum):
-    APARTMENT = "apartment"
-    HOUSE = "house"
-    CONDO = "condo"
-    TOWNHOUSE = "townhouse"
-    STUDIO = "studio"
-    DUPLEX = "duplex"
-    COMMERCIAL = "commercial"
+    APARTMENT = "APARTMENT"
+    HOUSE = "HOUSE"
+    CONDO = "CONDO"
+    TOWNHOUSE = "TOWNHOUSE"
+    STUDIO = "STUDIO"
+    DUPLEX = "DUPLEX"
+    COMMERCIAL = "COMMERCIAL"
 
 class PropertyStatus(str, Enum):
-    AVAILABLE = "available"
-    OCCUPIED = "occupied"
-    MAINTENANCE = "maintenance"
-    DRAFT = "draft"
-    ARCHIVED = "archived"
+    AVAILABLE = "AVAILABLE"
+    OCCUPIED = "OCCUPIED"
+    MAINTENANCE = "MAINTENANCE"
+    DRAFT = "DRAFT"
+    ARCHIVED = "ARCHIVED"
 
 class Property(Base):
     __tablename__ = "properties"
@@ -86,7 +86,7 @@ class Property(Base):
     owner = relationship("User", back_populates="owned_properties", foreign_keys=[owner_id])
     images = relationship("PropertyImage", back_populates="property", cascade="all, delete-orphan")
     amenities = relationship("PropertyAmenity", back_populates="property", cascade="all, delete-orphan")
-    leases = relationship("Lease", back_populates="property")
+    leases = relationship("Lease", back_populates="property_rel")
     applications = relationship("Application", back_populates="property")
     maintenance_requests = relationship("MaintenanceRequest", back_populates="property")
     
@@ -134,7 +134,7 @@ class PropertyImage(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    property_rel = relationship("Property", back_populates="images")
+    property = relationship("Property", back_populates="images")
     
     def __repr__(self):
         return f"<PropertyImage(id={self.id}, property_id={self.property_id}, filename='{self.filename}')>"
@@ -154,7 +154,7 @@ class PropertyAmenity(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    property_rel = relationship("Property", back_populates="amenities")
+    property = relationship("Property", back_populates="amenities")
     
     def __repr__(self):
         return f"<PropertyAmenity(id={self.id}, property_id={self.property_id}, name='{self.name}')>"

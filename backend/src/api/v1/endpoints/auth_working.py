@@ -184,7 +184,7 @@ async def logout():
     return {"message": "Successfully logged out"}
 
 # Dependency for role-based access
-def require_role(required_role: str):
+def require_roles(required_role: str):
     """Dependency factory for role-based access"""
     def role_checker(current_user: Dict[str, Any] = Depends(get_current_user)):
         if current_user['role'] != required_role and current_user['role'] != 'admin':
@@ -193,6 +193,6 @@ def require_role(required_role: str):
     return role_checker
 
 # Convenience dependencies
-require_admin = require_role('admin')
-require_landlord = require_role('landlord')
-require_tenant = require_role('tenant')
+require_admin = require_roles('admin')
+require_landlord = require_roles('landlord')
+require_tenant = require_roles('tenant')

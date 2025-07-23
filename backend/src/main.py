@@ -27,12 +27,16 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Green PM API...")
     
     # Create database tables if database is configured
-    if engine:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables created successfully")
-    else:
-        logger.warning("Database not configured - running without database")
+    try:
+        if engine:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            logger.info("Database tables created successfully")
+        else:
+            logger.warning("Database not configured - running without database")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        logger.warning("Continuing without database connection")
     
     yield
     
@@ -69,17 +73,21 @@ app.add_middleware(RateLimitMiddleware)
 # Include API router
 app.include_router(api_router, prefix="/api/v1")
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "environment": settings.ENVIRONMENT}
-
 @app.get("/")
 async def root():
     """Root endpoint"""
     return {
         "message": "Green PM API",
         "version": "1.0.0",
+        "environment": settings.ENVIRONMENT
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": "2025-01-27T20:00:00Z",
         "environment": settings.ENVIRONMENT
     }
 

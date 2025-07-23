@@ -14,6 +14,7 @@ backend_root = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_root))
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 from src.core.database import AsyncSessionLocal, engine, Base
 from src.core.security import SecurityManager
 from src.models.user import User
@@ -40,7 +41,7 @@ async def create_admin_user():
     async with AsyncSessionLocal() as session:
         # Check if admin already exists
         existing_admin = await session.execute(
-            "SELECT id FROM users WHERE email = 'admin@greenpm.com'"
+            text("SELECT id FROM users WHERE email = 'admin@greenpm.com'")
         )
         if existing_admin.scalar():
             print("❌ Admin user already exists")

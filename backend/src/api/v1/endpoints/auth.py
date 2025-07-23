@@ -55,30 +55,100 @@ async def login(
     request: LoginRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    """Login user"""
+    """Login user - simplified version bypassing ORM issues"""
     try:
-        auth_service = AuthService(db)
-        user = await auth_service.authenticate_user(request.email, request.password)
+        from sqlalchemy import text
+        from src.core.security import SecurityManager
         
-        if not user:
+        # Get user directly with raw SQL to avoid relationship issues
+        result = await db.execute(
+            text("""
+                SELECT id, uuid, email, hashed_password, role, status, first_name, last_name,
+                       phone, avatar_url, bio, address_line1, address_line2, city, state, 
+                       zip_code, country, email_verified, phone_verified, identity_verified,
+                       two_factor_enabled, notification_email, notification_sms, 
+                       notification_push, created_at, updated_at, last_login
+                FROM users 
+                WHERE email = :email
+            """),
+            {"email": request.email}
+        )
+        
+        user_row = result.fetchone()
+        
+        if not user_row:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
             )
         
+        # Verify password
+        security_manager = SecurityManager()
+        if not security_manager.verify_password(request.password, user_row.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect email or password"
+            )
+        
+        # Check if user is active
+        if user_row.status != 'ACTIVE':
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Account is not active"
+            )
+        
         # Generate access token
         access_token = security.create_access_token(
-            data={"sub": str(user.id), "email": user.email, "role": user.role}
+            data={
+                "sub": str(user_row.id),
+                "email": user_row.email,
+                "role": user_row.role
+            }
         )
         
         # Update last login
-        await auth_service.update_last_login(user.id)
+        await db.execute(
+            text("UPDATE users SET last_login = NOW() WHERE id = :user_id"),
+            {"user_id": user_row.id}
+        )
+        await db.commit()
+        
+        # Create user response
+        user_data = UserResponse(
+            id=user_row.id,
+            uuid=user_row.uuid or "",  # Handle None values
+            email=user_row.email,
+            first_name=user_row.first_name,
+            last_name=user_row.last_name,
+            phone=user_row.phone,
+            role=user_row.role,
+            status=user_row.status,
+            avatar_url=user_row.avatar_url,
+            bio=user_row.bio,
+            address_line1=user_row.address_line1,
+            address_line2=user_row.address_line2,
+            city=user_row.city,
+            state=user_row.state,
+            zip_code=user_row.zip_code,
+            country=user_row.country,
+            email_verified=user_row.email_verified or False,
+            phone_verified=user_row.phone_verified or False,
+            identity_verified=user_row.identity_verified or False,
+            two_factor_enabled=user_row.two_factor_enabled or False,
+            notification_email=user_row.notification_email or True,
+            notification_sms=user_row.notification_sms or True,
+            notification_push=user_row.notification_push or True,
+            created_at=user_row.created_at,
+            updated_at=user_row.updated_at,
+            last_login=user_row.last_login
+        )
         
         return LoginResponse(
-            user=UserResponse.from_orm(user),
+            user=user_data,
             access_token=access_token,
             token_type="bearer"
         )
+        
     except HTTPException:
         raise
     except Exception as e:
@@ -208,10 +278,94 @@ async def change_password(
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
-    current_user: User = Depends(get_current_active_user)
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    db: AsyncSession = Depends(get_db)
 ):
-    """Get current user information"""
-    return UserResponse.from_orm(current_user)
+    """Get current user information - simplified version bypassing ORM issues"""
+    try:
+        from sqlalchemy import text
+        from src.core.security import SecurityManager
+        
+        # Verify token
+        security_manager = SecurityManager()
+        payload = security_manager.verify_token(credentials.credentials)
+        user_id = int(payload.get("sub"))
+        
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials"
+            )
+        
+        # Get user directly with raw SQL to avoid relationship issues
+        result = await db.execute(
+            text("""
+                SELECT id, uuid, email, role, status, first_name, last_name,
+                       phone, avatar_url, bio, address_line1, address_line2, city, state, 
+                       zip_code, country, email_verified, phone_verified, identity_verified,
+                       two_factor_enabled, notification_email, notification_sms, 
+                       notification_push, created_at, updated_at, last_login
+                FROM users 
+                WHERE id = :user_id
+            """),
+            {"user_id": user_id}
+        )
+        
+        user_row = result.fetchone()
+        
+        if not user_row:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+        
+        # Check if user is active
+        if user_row.status != 'ACTIVE':
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Inactive user"
+            )
+        
+        # Create user response
+        user_data = UserResponse(
+            id=user_row.id,
+            uuid=user_row.uuid or "",
+            email=user_row.email,
+            first_name=user_row.first_name,
+            last_name=user_row.last_name,
+            phone=user_row.phone,
+            role=user_row.role,
+            status=user_row.status,
+            avatar_url=user_row.avatar_url,
+            bio=user_row.bio,
+            address_line1=user_row.address_line1,
+            address_line2=user_row.address_line2,
+            city=user_row.city,
+            state=user_row.state,
+            zip_code=user_row.zip_code,
+            country=user_row.country,
+            email_verified=user_row.email_verified or False,
+            phone_verified=user_row.phone_verified or False,
+            identity_verified=user_row.identity_verified or False,
+            two_factor_enabled=user_row.two_factor_enabled or False,
+            notification_email=user_row.notification_email or True,
+            notification_sms=user_row.notification_sms or True,
+            notification_push=user_row.notification_push or True,
+            created_at=user_row.created_at,
+            updated_at=user_row.updated_at,
+            last_login=user_row.last_login
+        )
+        
+        return user_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get current user error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials"
+        )
 
 @router.post("/logout")
 async def logout(

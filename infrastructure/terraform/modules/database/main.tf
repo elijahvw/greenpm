@@ -33,9 +33,18 @@ resource "google_sql_database_instance" "main" {
     }
 
     ip_configuration {
-      ipv4_enabled                                  = false
+      ipv4_enabled                                  = var.environment == "dev" ? true : false
       private_network                               = var.vpc_network
       enable_private_path_for_google_cloud_services = true
+      
+      # Allow access from anywhere for dev environment (restrict in production)
+      dynamic "authorized_networks" {
+        for_each = var.environment == "dev" ? [1] : []
+        content {
+          name  = "allow-all-dev"
+          value = "0.0.0.0/0"
+        }
+      }
     }
 
     database_flags {

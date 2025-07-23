@@ -28,17 +28,29 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest']
 
-  # Skip deployment - will be handled by Terraform
+  # Deploy to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "Deployment will be handled by Terraform"
+        echo "Deploying ${_SERVICE_NAME} to ${_REGION} for ${_ENVIRONMENT} environment"
+        gcloud run deploy ${_SERVICE_NAME} \
+          --image gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 3000 \
+          --memory 512Mi \
+          --cpu 1 \
+          --max-instances 5 \
+          --set-env-vars ENVIRONMENT=${_ENVIRONMENT}
 
 # Substitutions
 substitutions:
   _SERVICE_NAME: 'greenpm-dev-frontend'
+  _ENVIRONMENT: 'dev'
+  _REGION: 'us-central1'
 
 # Options
 options:

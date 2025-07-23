@@ -10,15 +10,15 @@ import uuid
 from src.core.database import Base
 
 class UserRole(str, Enum):
-    ADMIN = "admin"
-    LANDLORD = "landlord"
-    TENANT = "tenant"
+    ADMIN = "ADMIN"
+    LANDLORD = "LANDLORD"
+    TENANT = "TENANT"
 
 class UserStatus(str, Enum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    SUSPENDED = "suspended"
-    PENDING = "pending"
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    SUSPENDED = "SUSPENDED"
+    PENDING = "PENDING"
 
 class User(Base):
     __tablename__ = "users"
@@ -77,7 +77,7 @@ class User(Base):
     owned_properties = relationship("Property", back_populates="owner", foreign_keys="Property.owner_id")
     leases = relationship("Lease", back_populates="tenant", foreign_keys="Lease.tenant_id")
     payments = relationship("Payment", back_populates="user")
-    maintenance_requests = relationship("MaintenanceRequest", back_populates="tenant")
+    maintenance_requests = relationship("MaintenanceRequest", back_populates="tenant", foreign_keys="MaintenanceRequest.tenant_id")
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="Message.sender_id")
     received_messages = relationship("Message", back_populates="recipient", foreign_keys="Message.recipient_id")
     applications = relationship("Application", back_populates="applicant")
