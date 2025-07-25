@@ -1,28 +1,10 @@
-import axios from 'axios';
+import { api } from './api';
 import { Lease, CreateLeaseRequest, UpdateLeaseRequest, LeaseRenewal, LeaseTermination } from '../types/lease';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-const api = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export const leaseService = {
   // Get all leases for the current landlord
   async getLeases(): Promise<Lease[]> {
-    const response = await api.get('/leases');
+    const response = await api.get('/leases/');
     return response.data;
   },
 
@@ -34,14 +16,69 @@ export const leaseService = {
 
   // Create a new lease
   async createLease(lease: CreateLeaseRequest): Promise<Lease> {
-    const response = await api.post('/leases', lease);
-    return response.data;
+    // Transform frontend payload to match backend GCP database schema
+    const backendPayload = {
+      property_id: lease.propertyId,
+      tenant_id: lease.tenantId,
+      start_date: lease.startDate,
+      end_date: lease.endDate,
+      monthly_rent: lease.monthlyRent,
+      security_deposit: lease.securityDeposit || 0,
+      late_fee_amount: lease.lateFeePenalty || 0,
+      late_fee_grace_period: lease.gracePeriodDays || 5,
+      lease_terms: {
+        pet_policy: lease.petPolicy?.restrictions || null,
+        smoking_allowed: false, // Default value
+        subletting_allowed: false, // Default value
+        maintenance_responsibility: lease.landlordResponsibilities?.join(', ') || null,
+        utilities_included: lease.utilitiesIncluded || [],
+        parking_included: false, // Default value
+        additional_terms: [
+          lease.specialTerms,
+          lease.notes,
+          `Lease Type: ${lease.leaseType}`,
+          `Renewal Option: ${lease.renewalOption ? 'Yes' : 'No'}`,
+          lease.petPolicy?.allowed ? `Pet Policy: Allowed (Deposit: $${lease.petPolicy.deposit}, Monthly: $${lease.petPolicy.monthlyFee})` : 'Pet Policy: Not Allowed',
+          `Tenant Responsibilities: ${lease.tenantResponsibilities?.join(', ') || 'None specified'}`
+        ].filter(Boolean).join('\n\n')
+      }
+    };
+
+    console.log('🔄 Original lease data:', lease);
+    console.log('🔄 Transformed lease payload for GCP DB:', backendPayload);
+    
+    // Debug API call details
+    console.log('🔍 Making API call to /leases...');
+    console.log('🔍 API base URL:', api.defaults.baseURL);
+    console.log('🔍 Authorization header:', api.defaults.headers.common['Authorization']);
+    
+    try {
+      const response = await api.post('/leases', backendPayload);
+      console.log('✅ Lease creation successful:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Lease creation failed:', error);
+      console.error('❌ Error status:', error.response?.status);
+      console.error('❌ Error data:', error.response?.data);
+      console.error('❌ Error headers:', error.response?.headers);
+      throw error;
+    }
   },
 
   // Update an existing lease
   async updateLease(lease: UpdateLeaseRequest): Promise<Lease> {
-    const response = await api.put(`/leases/${lease.id}`, lease);
-    return response.data;
+    console.log('🔄 Updating lease:', lease);
+    
+    try {
+      const response = await api.put(`/leases/${lease.id}`, lease);
+      console.log('✅ Lease update successful:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Lease update failed:', error);
+      console.error('❌ Error status:', error.response?.status);
+      console.error('❌ Error data:', error.response?.data);
+      throw error;
+    }
   },
 
   // Delete a lease

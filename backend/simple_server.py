@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import uvicorn
+from datetime import datetime
 
 app = FastAPI(title="Green PM API - Simple")
 
@@ -26,6 +27,111 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     user: dict
 
+# In-memory storage for persistent changes during session
+mock_data = {
+    "users": {
+        1: {
+            "id": 1,
+            "uuid": "00000000-0000-0000-0000-000000000001",
+            "email": "admin@greenpm.com",
+            "first_name": "Master",
+            "last_name": "Admin",
+            "role": "admin",
+            "status": "ACTIVE",
+            "phone": "555-0001",
+            "avatar_url": None,
+            "bio": None,
+            "address_line1": "123 Admin St",
+            "address_line2": None,
+            "city": "Admin City",
+            "state": "AC",
+            "zip_code": "12345",
+            "country": "USA",
+            "email_verified": True,
+            "phone_verified": True,
+            "identity_verified": True,
+            "two_factor_enabled": False,
+            "notification_email": True,
+            "notification_sms": True,
+            "notification_push": True,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+            "last_login": "2024-01-01T00:00:00Z",
+            "password": "GreenPM2024!"
+        },
+        2: {
+            "id": 2,
+            "uuid": "00000000-0000-0000-0000-000000000002",
+            "email": "landlord@example.com",
+            "first_name": "Sample",
+            "last_name": "Landlord",
+            "role": "landlord",
+            "status": "ACTIVE",
+            "phone": "555-0002",
+            "avatar_url": None,
+            "bio": None,
+            "address_line1": "456 Landlord Ave",
+            "address_line2": None,
+            "city": "Property City",
+            "state": "PC",
+            "zip_code": "54321",
+            "country": "USA",
+            "email_verified": True,
+            "phone_verified": True,
+            "identity_verified": True,
+            "two_factor_enabled": False,
+            "notification_email": True,
+            "notification_sms": True,
+            "notification_push": True,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+            "last_login": "2024-01-01T00:00:00Z",
+            "password": "landlord123"
+        },
+        3: {
+            "id": 3,
+            "uuid": "00000000-0000-0000-0000-000000000003",
+            "email": "tenant@example.com",
+            "first_name": "Sample",
+            "last_name": "Tenant",
+            "role": "tenant",
+            "status": "ACTIVE",
+            "phone": "555-0003",
+            "avatar_url": None,
+            "bio": None,
+            "address_line1": "789 Tenant Blvd",
+            "address_line2": "Apt 101",
+            "city": "Rental City",
+            "state": "RC",
+            "zip_code": "98765",
+            "country": "USA",
+            "email_verified": True,
+            "phone_verified": False,
+            "identity_verified": False,
+            "two_factor_enabled": False,
+            "notification_email": True,
+            "notification_sms": False,
+            "notification_push": True,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+            "last_login": "2024-01-01T00:00:00Z",
+            "password": "tenant123"
+        }
+    },
+    "properties": {},
+    "leases": {},
+    "tenants": {},
+    "maintenance_requests": {},
+    "reports": {}
+}
+
+# Token to user ID mapping
+token_to_user_id = {
+    "mock_token_1": 1,
+    "mock_token_2": 2,
+    "mock_token_3": 3
+}
+
 @app.get("/")
 async def root():
     return {"message": "Green PM API is running"}
@@ -38,36 +144,13 @@ async def health_check():
 async def login(credentials: LoginRequest):
     """Simple login endpoint for testing"""
     
-    # Mock user data - matching demo credentials from login page
-    mock_users = {
-        "admin@greenpm.com": {
-            "id": "1",
-            "email": "admin@greenpm.com",
-            "first_name": "Master",
-            "last_name": "Admin", 
-            "role": "admin",
-            "password": "GreenPM2024!"
-        },
-        "landlord@example.com": {
-            "id": "2",
-            "email": "landlord@example.com",
-            "first_name": "Sample",
-            "last_name": "Landlord", 
-            "role": "landlord",
-            "password": "landlord123"
-        },
-        "tenant@example.com": {
-            "id": "3", 
-            "email": "tenant@example.com",
-            "first_name": "Sample",
-            "last_name": "Tenant",
-            "role": "tenant", 
-            "password": "tenant123"
-        }
-    }
+    # Find user by email in mock_data
+    user = None
+    for user_id, user_data in mock_data["users"].items():
+        if user_data["email"] == credentials.email:
+            user = user_data
+            break
     
-    # Check credentials
-    user = mock_users.get(credentials.email)
     if not user or user["password"] != credentials.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
@@ -75,7 +158,7 @@ async def login(credentials: LoginRequest):
     user_data = {k: v for k, v in user.items() if k != "password"}
     
     return LoginResponse(
-        access_token="mock_token_" + user["id"],
+        access_token="mock_token_" + str(user["id"]),
         user=user_data
     )
 
@@ -83,51 +166,24 @@ async def login(credentials: LoginRequest):
 async def get_current_user(authorization: Optional[str] = Header(None)):
     """Mock current user endpoint for token validation"""
     
-    # Mock users matching login credentials
-    mock_users = {
-        "mock_token_1": {
-            "id": "1",
-            "email": "admin@greenpm.com",
-            "first_name": "Master",
-            "last_name": "Admin",
-            "role": "admin",
-            "is_active": True,
-            "created_at": "2024-01-01T00:00:00Z"
-        },
-        "mock_token_2": {
-            "id": "2",
-            "email": "landlord@example.com",
-            "first_name": "Sample",
-            "last_name": "Landlord",
-            "role": "landlord",
-            "is_active": True,
-            "created_at": "2024-01-01T00:00:00Z"
-        },
-        "mock_token_3": {
-            "id": "3",
-            "email": "tenant@example.com",
-            "first_name": "Sample",
-            "last_name": "Tenant",
-            "role": "tenant",
-            "is_active": True,
-            "created_at": "2024-01-01T00:00:00Z"
-        }
-    }
-    
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header required")
     
     # Extract token from "Bearer <token>" format
-    try:
-        token = authorization.split(" ")[1] if authorization.startswith("Bearer ") else authorization
-    except IndexError:
-        raise HTTPException(status_code=401, detail="Invalid authorization header format")
+    token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
     
-    user = mock_users.get(token)
-    if not user:
+    # Get user ID from token
+    user_id = token_to_user_id.get(token)
+    if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
     
-    return user
+    # Get user from mock_data
+    user = mock_data["users"].get(user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    # Return user data (without password)
+    return {k: v for k, v in user.items() if k != "password"}
 
 @app.get("/api/v1/dashboard/stats")
 async def get_dashboard_stats():
@@ -303,6 +359,284 @@ async def get_security_deposits():
             "deductions": []
         }
     ]
+
+# UPDATE ENDPOINTS
+
+@app.put("/api/v1/properties/{property_id}")
+async def update_property(property_id: int, request: dict):
+    """Update property - with persistent storage"""
+    # Store/update in mock_data
+    if property_id not in mock_data["properties"]:
+        # Create new property if it doesn't exist
+        mock_data["properties"][property_id] = {
+            "id": property_id,
+            "created_at": datetime.now().isoformat() + "Z"
+        }
+    
+    # Update property data
+    property_data = mock_data["properties"][property_id]
+    property_data.update(request)
+    property_data["updated_at"] = datetime.now().isoformat() + "Z"
+    
+    return property_data
+
+@app.put("/api/v1/leases/{lease_id}")
+async def update_lease(lease_id: int, request: dict):
+    """Update lease - with persistent storage"""
+    # Store/update in mock_data
+    if lease_id not in mock_data["leases"]:
+        # Create new lease if it doesn't exist
+        mock_data["leases"][lease_id] = {
+            "id": lease_id,
+            "created_at": datetime.now().isoformat() + "Z"
+        }
+    
+    # Update lease data
+    lease_data = mock_data["leases"][lease_id]
+    lease_data.update(request)
+    lease_data["updated_at"] = datetime.now().isoformat() + "Z"
+    
+    return lease_data
+
+@app.put("/api/v1/applications/{application_id}")
+async def update_application(application_id: int, request: dict):
+    """Update application - mock implementation"""
+    return {
+        "id": application_id,
+        **request,
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.put("/api/v1/maintenance/requests/{request_id}")
+async def update_maintenance_request(request_id: int, request: dict):
+    """Update maintenance request - mock implementation"""
+    return {
+        "id": request_id,
+        **request,
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.put("/api/v1/admin/users/{user_id}")
+async def update_user(user_id: int, request: dict):
+    """Update user - mock implementation"""
+    return {
+        "id": user_id,
+        **request,
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.put("/api/v1/users/profile")
+async def update_profile(request: dict, authorization: Optional[str] = Header(None)):
+    """Update user profile - actually persists changes in mock_data"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header required")
+    
+    # Extract token from "Bearer <token>" format
+    token = authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else authorization
+    
+    # Get user ID from token
+    user_id = token_to_user_id.get(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    # Get user from mock_data
+    user = mock_data["users"].get(user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    # Update user data with requested changes
+    if "first_name" in request:
+        user["first_name"] = request["first_name"]
+    if "last_name" in request:
+        user["last_name"] = request["last_name"]
+    if "phone" in request:
+        user["phone"] = request["phone"]
+    if "address" in request:
+        user["address_line1"] = request["address"]
+    if "email" in request:
+        user["email"] = request["email"]
+    
+    # Update timestamp
+    user["updated_at"] = datetime.now().isoformat() + "Z"
+    
+    # Return updated user data (without password)
+    return {k: v for k, v in user.items() if k != "password"}
+
+# CREATE ENDPOINTS
+
+@app.post("/api/v1/properties")
+async def create_property(request: dict):
+    """Create property - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.post("/api/v1/leases")
+async def create_lease(request: dict):
+    """Create lease - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.post("/api/v1/applications")
+async def create_application(request: dict):
+    """Create application - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.post("/api/v1/maintenance/requests")
+async def create_maintenance_request(request: dict):
+    """Create maintenance request - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.post("/api/v1/payments")
+async def create_payment(request: dict):
+    """Create payment - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.post("/api/v1/tenants")
+async def create_tenant(request: dict):
+    """Create tenant - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.post("/api/v1/reports")
+async def create_report(request: dict):
+    """Create report - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+@app.post("/api/v1/report-templates")
+async def create_report_template(request: dict):
+    """Create report template - mock implementation"""
+    import random
+    return {
+        "id": random.randint(1000, 9999),
+        **request,
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z"
+    }
+
+# GET ENDPOINTS FOR ADDITIONAL RESOURCES
+
+@app.get("/api/v1/tenants")
+async def get_tenants():
+    """Mock tenants endpoint"""
+    return [
+        {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john.doe@email.com",
+            "phone": "555-0001",
+            "address": "123 Main St",
+            "lease_id": 1,
+            "status": "active"
+        },
+        {
+            "id": 2,
+            "name": "Jane Smith", 
+            "email": "jane.smith@email.com",
+            "phone": "555-0002",
+            "address": "456 Oak Ave",
+            "lease_id": 2,
+            "status": "active"
+        }
+    ]
+
+@app.get("/api/v1/tenants/{tenant_id}")
+async def get_tenant(tenant_id: int):
+    """Mock single tenant endpoint"""
+    return {
+        "id": tenant_id,
+        "name": "John Doe",
+        "email": "john.doe@email.com",
+        "phone": "555-0001",
+        "address": "123 Main St",
+        "lease_id": 1,
+        "status": "active"
+    }
+
+@app.get("/api/v1/reports")
+async def get_reports():
+    """Mock reports endpoint"""
+    return [
+        {
+            "id": 1,
+            "name": "Monthly Financial Report",
+            "type": "financial",
+            "status": "completed",
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    ]
+
+@app.get("/api/v1/report-templates")
+async def get_report_templates():
+    """Mock report templates endpoint"""
+    return [
+        {
+            "id": 1,
+            "name": "Monthly Financial Template",
+            "type": "financial",
+            "created_at": "2024-01-01T00:00:00Z"
+        }
+    ]
+
+@app.get("/api/v1/analytics/dashboard")
+async def get_analytics_dashboard():
+    """Mock analytics dashboard endpoint"""
+    return {
+        "total_revenue": 15000,
+        "occupancy_rate": 95.5,
+        "maintenance_requests": 3,
+        "properties_count": 5
+    }
+
+# DELETE ENDPOINTS
+
+@app.delete("/api/v1/properties/{property_id}")
+async def delete_property(property_id: int):
+    """Delete property - mock implementation"""
+    return {"message": "Property deleted successfully"}
+
+@app.delete("/api/v1/admin/users/{user_id}")
+async def delete_user(user_id: int):
+    """Delete user - mock implementation"""
+    return {"message": "User deleted successfully"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Lease, CreateLeaseRequest, UpdateLeaseRequest } from '../types/lease';
 import { leaseService } from '../services/leaseService';
 import { securityDepositService } from '../services/securityDepositService';
@@ -11,12 +11,13 @@ import LeaseViewModal from '../components/Leases/LeaseViewModal';
 import LeaseRenewalModal from '../components/Leases/LeaseRenewalModal';
 import LeaseTerminationModal from '../components/Leases/LeaseTerminationModal';
 import LeaseEditModal from '../components/Leases/LeaseEditModal';
-import LeaseCreateModal from '../components/Leases/LeaseCreateModal';
+
 import { PlusIcon, MagnifyingGlassIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 const Leases: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [leases, setLeases] = useState<Lease[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,12 +37,45 @@ const Leases: React.FC = () => {
   const [isRenewalModalOpen, setIsRenewalModalOpen] = useState(false);
   const [terminatingLease, setTerminatingLease] = useState<Lease | undefined>();
   const [isTerminationModalOpen, setIsTerminationModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
 
   useEffect(() => {
     fetchLeases();
     fetchProperties();
   }, []);
+
+  // Refresh leases when the component becomes visible (e.g., after navigation)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page became visible, refreshing leases...');
+        fetchLeases();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // Refresh leases when returning from other pages
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('🔄 Window focused, refreshing leases...');
+      fetchLeases();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // Handle URL parameters for property filtering
+  useEffect(() => {
+    const propertyId = searchParams.get('propertyId');
+    
+    if (propertyId) {
+      setPropertyFilter(propertyId);
+    }
+  }, [searchParams]);
 
   const fetchProperties = async () => {
     try {
@@ -196,22 +230,46 @@ const Leases: React.FC = () => {
       console.log('📋 Leases page - Updating lease with data:', data);
       const result = await leaseService.updateLease(data);
       console.log('✅ Leases page - Update result:', result);
+      
+      // Update the lease in the local state immediately for instant UI feedback
+      setLeases(prevLeases => 
+        prevLeases.map(lease => 
+          lease.id === data.id 
+            ? { ...lease, ...result, updated_at: new Date().toISOString() }
+            : lease
+        )
+      );
+      
       toast.success('Lease updated successfully!');
-      // Refresh leases to show the updated data
-      await fetchLeases();
-      console.log('🔄 Leases page - Leases refreshed');
+      
+      // Also refresh from server to ensure consistency
+      setTimeout(() => {
+        fetchLeases();
+      }, 500);
+      
+      console.log('🔄 Leases page - Local state updated and refresh scheduled');
+      
       // Close the modal
       setIsEditModalOpen(false);
       setEditingLease(undefined);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Leases page - Error updating lease:', error);
-      toast.error('Failed to update lease');
+      
+      // Extract error message from API response
+      let errorMessage = 'Failed to update lease';
+      if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
 
   const openCreateForm = () => {
-    setIsCreateModalOpen(true);
+    navigate('/dashboard/leases/create');
   };
 
   const handleCreateSubmit = async (data: CreateLeaseRequest) => {
@@ -250,9 +308,18 @@ const Leases: React.FC = () => {
       // Refresh leases to show the new lease
       await fetchLeases();
       console.log('🔄 Leases page - Leases refreshed');
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Leases page - Error creating lease:', error);
-      toast.error('Failed to create lease');
+      
+      // Extract error message from API response
+      let errorMessage = 'Failed to create lease';
+      if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -519,8 +586,9 @@ const Leases: React.FC = () => {
               <option value="all">All Properties</option>
               {properties.map(property => (
                 <option key={property.id} value={property.id}>
-                  {property.name} - {typeof property.address === 'string' ? property.address : 
-                    `${property.address.street}, ${property.address.city}`}
+                  {property.name || (property as any).title} - {typeof property.address === 'string' ? property.address : 
+                    property.address ? `${property.address.street}, ${property.address.city}` : 
+                    `${(property as any).street || (property as any).address_line1 || ''}, ${(property as any).city || ''}`}
                 </option>
               ))}
             </select>
@@ -629,11 +697,7 @@ const Leases: React.FC = () => {
         />
       )}
 
-      <LeaseCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateSubmit}
-      />
+
     </div>
   );
 };

@@ -26,38 +26,35 @@ const PropertyViewModal: React.FC<PropertyViewModalProps> = ({
   onViewLeases,
   onEdit
 }) => {
-  const [activeLease, setActiveLease] = useState<Lease | null>(null);
-  const [loadingLease, setLoadingLease] = useState(false);
+  // Use lease data from property instead of separate API call
+  const activeLease = property?.current_lease ? {
+    id: property.current_lease.id,
+    propertyId: property.id,
+    property_id: property.id,
+    tenant_name: property.current_lease.tenant_name,
+    tenant_email: property.current_lease.tenant_email,
+    start_date: property.current_lease.start_date,
+    end_date: property.current_lease.end_date,
+    startDate: property.current_lease.start_date, // Add camelCase version
+    endDate: property.current_lease.end_date, // Add camelCase version  
+    monthly_rent: property.current_lease.monthly_rent,
+    rent_amount: property.current_lease.monthly_rent,
+    monthlyRent: property.current_lease.monthly_rent, // Add camelCase version
+    status: property.current_lease.status,
+  } : null;
 
-  useEffect(() => {
-    if (isOpen && property?.id) {
-      fetchActiveLease(property.id);
-    }
-  }, [isOpen, property?.id]);
-
-  const fetchActiveLease = async (propertyId: string) => {
-    try {
-      setLoadingLease(true);
-      const allLeases = await leaseService.getLeases();
-      // Find active lease for this property
-      const activeLeaseForProperty = allLeases.find(lease => 
-        (lease.propertyId === propertyId || lease.property_id === propertyId) &&
-        (lease.status === 'active' || !lease.status) // Default to active if no status
-      );
-      setActiveLease(activeLeaseForProperty || null);
-    } catch (error) {
-      console.error('Error fetching active lease:', error);
-      setActiveLease(null);
-    } finally {
-      setLoadingLease(false);
-    }
-  };
-
-  const formatAddress = (address: any) => {
-    if (typeof address === 'string') {
-      return address;
-    }
-    return `${address.street}, ${address.city}, ${address.state} ${address.zipCode}`;
+  const formatAddress = (property: Property) => {
+    // Always build complete address from individual fields to ensure city, state, zip are included
+    const street = (property as any).street || (property as any).address_line1 || (property as any).address || '';
+    const unit = (property as any).unit || (property as any).address_line2 || '';
+    const city = (property as any).city || '';
+    const state = (property as any).state || '';
+    const zipCode = (property as any).zipCode || (property as any).zip_code || '';
+    
+    // Build address string from individual components
+    const streetWithUnit = unit ? `${street}, ${unit}` : street;
+    const parts = [streetWithUnit, city, state, zipCode].filter(part => part && part.trim());
+    return parts.length > 0 ? parts.join(', ') : 'Address not available';
   };
 
   const rentAmount = property.rentAmount || property.rent_amount || 0;
@@ -68,10 +65,10 @@ const PropertyViewModal: React.FC<PropertyViewModalProps> = ({
       <div className="space-y-6">
         {/* Property Header */}
         <div className="bg-gray-50 rounded-lg p-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{property.name}</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{property.name || (property as any).title || 'Untitled Property'}</h2>
           <div className="flex items-center text-gray-600 mb-2">
             <MapPinIcon className="h-5 w-5 mr-2" />
-            <span>{formatAddress(property.address)}</span>
+            <span>{formatAddress(property)}</span>
           </div>
           <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
             <TagIcon className="h-4 w-4 mr-1" />
@@ -212,7 +209,7 @@ const PropertyViewModal: React.FC<PropertyViewModalProps> = ({
             )}
           </div>
 
-          {loadingLease ? (
+          {false ? (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               <span className="ml-2 text-sm text-gray-600">Loading lease...</span>

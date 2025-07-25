@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 export const api = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds for safety
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,8 +30,16 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
+      console.warn('🚨 API: 401 Unauthorized - Token may be expired');
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      
+      // Only redirect if we're not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        // Give user a moment to see any error messages before redirecting
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+      }
     }
     return Promise.reject(error);
   }

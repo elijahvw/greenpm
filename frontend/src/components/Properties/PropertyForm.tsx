@@ -32,32 +32,72 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
 
   useEffect(() => {
     if (property) {
-      // Populate form with existing property data
-      setValue('name', property.name);
+      // Populate form with existing property data - try all possible name fields
+      const propertyName = property.name || 
+                          (property as any).title || 
+                          (property as any).name || 
+                          '';
+      console.log('Populating form with property:', property);
+      console.log('Property name found:', propertyName);
+      setValue('name', propertyName);
       
-      // Handle address - if it's a string, parse it or set defaults
-      if (typeof property.address === 'string') {
-        // For string addresses, we'll need to parse or set defaults
-        setValue('address.street', '');
-        setValue('address.city', '');
-        setValue('address.state', '');
-        setValue('address.zipCode', '');
-        setValue('address.country', 'USA');
-      } else {
-        setValue('address.street', property.address.street);
-        setValue('address.city', property.address.city);
-        setValue('address.state', property.address.state);
-        setValue('address.zipCode', property.address.zipCode);
-        setValue('address.country', property.address.country);
+      // Handle address - parse address_line1 to separate street and unit
+      const addressLine1 = (property as any).address_line1 || '';
+      const city = (property as any).city || '';
+      const state = (property as any).state || '';
+      const zipCode = (property as any).zipCode || (property as any).zip_code || '';
+      
+      // Parse street and unit from address_line1 (format: "123 Main St, Apt 2B")
+      let street = '';
+      let unit = '';
+      
+      if (addressLine1) {
+        console.log('🏠 Parsing address_line1:', addressLine1);
+        // Look for comma to separate street from unit
+        const commaIndex = addressLine1.lastIndexOf(',');
+        if (commaIndex > 0) {
+          street = addressLine1.substring(0, commaIndex).trim();
+          unit = addressLine1.substring(commaIndex + 1).trim();
+          console.log('🏠 Parsed - Street:', street, 'Unit:', unit);
+        } else {
+          // No comma found, entire string is street
+          street = addressLine1.trim();
+          console.log('🏠 No comma found - Street:', street, 'Unit: (empty)');
+        }
       }
       
-      setValue('type', property.type as any); // Cast to avoid type error
-      setValue('bedrooms', property.bedrooms);
-      setValue('bathrooms', property.bathrooms);
-      setValue('squareFeet', property.squareFeet || property.square_feet || 0);
-      setValue('rentAmount', property.rentAmount || property.rent_amount || 0);
+      if (typeof property.address === 'string') {
+        // For string addresses, we'll need to parse or set defaults
+        setValue('address.street', street);
+        setValue('address.unit', unit);
+        setValue('address.city', city);
+        setValue('address.state', state);
+        setValue('address.zipCode', zipCode);
+        setValue('address.country', 'USA');
+      } else if (property.address && typeof property.address === 'object') {
+        setValue('address.street', property.address.street || street);
+        setValue('address.unit', property.address.unit || unit);
+        setValue('address.city', property.address.city || city);
+        setValue('address.state', property.address.state || state);
+        setValue('address.zipCode', property.address.zipCode || zipCode);
+        setValue('address.country', property.address.country || 'USA');
+      } else {
+        // Use parsed fields from API
+        setValue('address.street', street);
+        setValue('address.unit', unit);
+        setValue('address.city', city);
+        setValue('address.state', state);
+        setValue('address.zipCode', zipCode);
+        setValue('address.country', 'USA');
+      }
+      
+      setValue('type', (property.type || 'apartment') as any);
+      setValue('bedrooms', property.bedrooms || 0);
+      setValue('bathrooms', property.bathrooms || 0);
+      setValue('squareFeet', property.squareFeet || (property as any).square_feet || 0);
+      setValue('rentAmount', property.rentAmount || (property as any).rent_amount || 0);
       setValue('deposit', property.deposit || 0);
-      setValue('description', property.description);
+      setValue('description', property.description || '');
       setAmenities(property.amenities || []);
     } else {
       // Reset form for new property
@@ -177,6 +217,18 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                       {errors.address?.street && (
                         <p className="mt-1 text-sm text-red-600">{errors.address.street.message}</p>
                       )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Unit/Apartment Number
+                      </label>
+                      <input
+                        type="text"
+                        {...register('address.unit')}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                        placeholder="Apt 2B, Unit 105, etc. (optional)"
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

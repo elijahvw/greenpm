@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 // API Configuration
-const API_BASE_URL = 'https://greenpm-dev-backend-working-448329720610.us-central1.run.app';
+const API_BASE_URL = 'http://localhost:8000';
 
 // Types
 interface User {

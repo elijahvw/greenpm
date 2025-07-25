@@ -20,53 +20,45 @@ api.interceptors.request.use((config) => {
 });
 
 export const tenantService = {
-  // Get all tenants for the current landlord (extracted from leases)
+  // Get all tenants for the current landlord
   async getTenants(): Promise<Tenant[]> {
     try {
-      // Since there's no dedicated tenants endpoint, we'll extract tenant data from leases
-      const response = await api.get('/leases');
-      const leases = response.data;
+      // Use the dedicated tenants endpoint
+      const response = await api.get('/users/tenants');
+      const tenants = response.data;
       
-      // Extract unique tenants from lease data
-      const tenantMap = new Map();
-      
-      leases.forEach((lease: any) => {
-        if (lease.tenant_id && lease.tenant_name) {
-          tenantMap.set(lease.tenant_id, {
-            id: lease.tenant_id,
-            firstName: lease.tenant_name.split(' ')[0] || '',
-            lastName: lease.tenant_name.split(' ').slice(1).join(' ') || '',
-            email: lease.tenant_email || '',
-            phone: lease.tenant_phone || '',
-            // Additional fields with defaults
-            dateOfBirth: '',
-            emergencyContact: {
-              name: '',
-              phone: '',
-              relationship: ''
-            },
-            employment: {
-              employer: '',
-              position: '',
-              monthlyIncome: 0,
-              employmentStartDate: ''
-            },
-            documents: [],
-            leaseHistory: [],
-            paymentHistory: [],
-            createdAt: lease.created_at || '',
-            updatedAt: lease.updated_at || '',
-            isActive: lease.status === 'active',
-            // Current lease info
-            currentProperty: lease.property_name || '',
-            currentRent: lease.rent_amount || 0,
-            leaseStartDate: lease.start_date || '',
-            leaseEndDate: lease.end_date || ''
-          });
-        }
-      });
-      
-      return Array.from(tenantMap.values());
+      // Transform tenants data to match expected interface
+      return tenants.map((tenant: any) => ({
+        id: tenant.id,
+        firstName: tenant.firstName || tenant.first_name || '',
+        lastName: tenant.lastName || tenant.last_name || '',
+        email: tenant.email || '',
+        phone: tenant.phone || '',
+        // Additional fields with defaults
+        dateOfBirth: '',
+        emergencyContact: {
+          name: '',
+          phone: '',
+          relationship: ''
+        },
+        employment: {
+          employer: '',
+          position: '',
+          monthlyIncome: 0,
+          employmentStartDate: ''
+        },
+        documents: [],
+        leaseHistory: [],
+        paymentHistory: [],
+        createdAt: tenant.created_at || '',
+        updatedAt: tenant.updated_at || '',
+        isActive: tenant.status === 'active',
+        // Current lease info - would need additional API call to get this
+        currentProperty: '',
+        currentRent: 0,
+        leaseStartDate: '',
+        leaseEndDate: ''
+      }));
     } catch (error) {
       console.error('Error fetching tenants from leases:', error);
       return [];
@@ -87,7 +79,7 @@ export const tenantService = {
 
   // Update an existing tenant
   async updateTenant(tenant: UpdateTenantRequest): Promise<Tenant> {
-    const response = await api.put(`/tenants/${tenant.id}`, tenant);
+    const response = await api.put(`/users/tenants/${tenant.id}`, tenant);
     return response.data;
   },
 

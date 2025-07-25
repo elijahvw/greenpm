@@ -29,12 +29,14 @@ interface LeaseCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateLeaseRequest) => Promise<void>;
+  preSelectedPropertyId?: string;
 }
 
 const LeaseCreateModal: React.FC<LeaseCreateModalProps> = ({
   isOpen,
   onClose,
-  onSubmit
+  onSubmit,
+  preSelectedPropertyId
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -43,11 +45,16 @@ const LeaseCreateModal: React.FC<LeaseCreateModalProps> = ({
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   
   // Helper function to safely access address properties
-  const getAddressString = (address: string | { street: string; city: string; state: string; zipCode: string; country: string; }) => {
+  const getAddressString = (address?: string | { street: string; city: string; state: string; zipCode: string; country: string; } | null, property?: any) => {
     if (typeof address === 'string') {
       return address;
     } else if (address && typeof address === 'object') {
       return `${address.street}, ${address.city}`;
+    } else if (property) {
+      // Use individual fields from API response
+      const street = property.street || property.address_line1 || '';
+      const city = property.city || '';
+      return street && city ? `${street}, ${city}` : street || city || '';
     }
     return '';
   };
@@ -85,16 +92,32 @@ const LeaseCreateModal: React.FC<LeaseCreateModalProps> = ({
   const loadPropertiesAndTenants = async () => {
     try {
       const [propertiesData, tenantsData] = await Promise.all([
-        propertyService.getProperties(),
+        propertyService.getPropertiesForLeases(), // Use the lease-specific endpoint
         tenantService.getTenants()
       ]);
       
-      // Filter available properties (not occupied) and active/prospective tenants
-      const availableProperties = propertiesData.filter(p => p.status === 'available');
+      // Show ALL properties for lease creation (occupied properties can have draft/pending leases)
+      // Only filter tenants to active/prospective
       const availableTenants = tenantsData.filter(t => ['active', 'prospective'].includes(t.status || 'prospective'));
       
-      setProperties(availableProperties);
+      setProperties(propertiesData); // Show all properties
       setTenants(availableTenants);
+      
+      // Pre-select property if provided
+      if (preSelectedPropertyId) {
+        const preSelectedProperty = propertiesData.find((p: any) => p.id === preSelectedPropertyId);
+        if (preSelectedProperty) {
+          setValue('propertyId', preSelectedPropertyId);
+          setSelectedProperty(preSelectedProperty);
+          
+          // Auto-fill rent amount from property if available
+          if (preSelectedProperty.rentAmount || preSelectedProperty.rent_amount) {
+            const rentAmount = preSelectedProperty.rentAmount || preSelectedProperty.rent_amount || 0;
+            setValue('monthlyRent', rentAmount);
+            setValue('securityDeposit', rentAmount); // Default to 1 month rent
+          }
+        }
+      }
     } catch (error) {
       console.error('Error loading properties and tenants:', error);
       toast.error('Failed to load properties and tenants');
@@ -127,6 +150,10 @@ const LeaseCreateModal: React.FC<LeaseCreateModalProps> = ({
     try {
       setIsSubmitting(true);
       
+      // Determine initial status based on whether property has active lease
+      const hasActiveLease = selectedProperty?.current_lease?.status === 'active';
+      const initialStatus = hasActiveLease ? 'pending' : 'active';
+      
       const leaseData: CreateLeaseRequest = {
         propertyId: data.propertyId,
         tenantId: data.tenantId,
@@ -138,6 +165,7 @@ const LeaseCreateModal: React.FC<LeaseCreateModalProps> = ({
         gracePeriodDays: data.gracePeriodDays,
         leaseType: data.leaseType,
         renewalOption: data.renewalOption,
+        status: initialStatus,
         notes: data.notes,
         specialTerms: data.specialTerms,
         // Add required fields with defaults
@@ -195,7 +223,7 @@ const LeaseCreateModal: React.FC<LeaseCreateModalProps> = ({
               <option value="">Select a property...</option>
               {properties.map(property => (
                 <option key={property.id} value={property.id}>
-                  {property.name || getAddressString(property.address)} - ${property.rentAmount || 'N/A'}/month
+                  {`${property.name || (property as any).title} - ${property.address} - $${property.rentAmount || (property as any).rent_amount || 'N/A'}/month`}
                 </option>
               ))}
             </select>
@@ -203,10 +231,40 @@ const LeaseCreateModal: React.FC<LeaseCreateModalProps> = ({
               <p className="mt-1 text-sm text-red-600">{errors.propertyId.message}</p>
             )}
             {selectedProperty && (
-              <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
-                <p><strong>Address:</strong> {getAddressString(selectedProperty.address)}</p>
-                <p><strong>Type:</strong> {selectedProperty.type} • <strong>Bedrooms:</strong> {selectedProperty.bedrooms} • <strong>Bathrooms:</strong> {selectedProperty.bathrooms}</p>
-              </div>
+              <>
+                <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+                  <p>
+                    <><strong>Address:</strong> {typeof selectedProperty.address === 'string' ? selectedProperty.address : `${selectedProperty.street || selectedProperty.address_line1 || ''} ${selectedProperty.city || ''}, ${selectedProperty.state || ''} ${selectedProperty.zipCode || selectedProperty.zip_code || ''}`}</>
+                  </p>
+                  <p>
+                    <><strong>Type:</strong> {selectedProperty.type || 'N/A'} • <strong>Bedrooms:</strong> {selectedProperty.bedrooms || 'N/A'} • <strong>Bathrooms:</strong> {selectedProperty.bathrooms || 'N/A'} • <strong>Rent:</strong> ${(selectedProperty.rentAmount || selectedProperty.rent_amount || 0).toLocaleString()}/month</>
+                  </p>
+                </div>
+                {/* Warning for properties with active leases */}
+                {selectedProperty.current_lease && selectedProperty.current_lease.status === 'active' && (
+                  <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <span className="text-yellow-600">⚠️</span>
+                      </div>
+                      <div className="ml-2">
+                        <p className="text-yellow-800 font-medium">Active Lease Exists</p>
+                        <p className="text-yellow-700 mt-1">
+                          This property has an active lease with {selectedProperty.current_lease.tenant_name} until{' '}
+                          {(() => {
+                            const dateString = selectedProperty.current_lease.end_date!;
+                            const date = dateString.includes('T') 
+                              ? new Date(dateString) 
+                              : new Date(dateString + 'T00:00:00');
+                            return date.toLocaleDateString();
+                          })()} 
+                          . This new lease will be created in pending status.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 

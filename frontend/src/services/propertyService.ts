@@ -26,6 +26,14 @@ export const propertyService = {
     return response.data;
   },
 
+  // Get properties formatted for lease creation (from leases database)
+  async getPropertiesForLeases(): Promise<Property[]> {
+    console.log('🏠 Fetching properties for lease creation...');
+    const response = await api.get('/leases/properties');
+    console.log('🏠 Properties for leases:', response.data);
+    return response.data;
+  },
+
   // Get a single property by ID
   async getProperty(id: string): Promise<Property> {
     const response = await api.get(`/properties/${id}`);

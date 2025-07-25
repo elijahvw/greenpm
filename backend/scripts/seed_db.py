@@ -77,8 +77,9 @@ async def create_sample_landlord():
     
     async with AsyncSessionLocal() as session:
         # Check if landlord already exists
+        from sqlalchemy import text
         existing_landlord = await session.execute(
-            "SELECT id FROM users WHERE email = 'landlord@example.com'"
+            text("SELECT id FROM users WHERE email = 'landlord@example.com'")
         )
         if existing_landlord.scalar():
             print("❌ Sample landlord already exists")
@@ -115,7 +116,7 @@ async def create_sample_tenant():
     async with AsyncSessionLocal() as session:
         # Check if tenant already exists
         existing_tenant = await session.execute(
-            "SELECT id FROM users WHERE email = 'tenant@example.com'"
+            text("SELECT id FROM users WHERE email = 'tenant@example.com'")
         )
         if existing_tenant.scalar():
             print("❌ Sample tenant already exists")

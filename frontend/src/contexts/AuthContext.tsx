@@ -88,10 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(access_token);
       setUser(userData);
       localStorage.setItem('token', access_token);
+      localStorage.setItem('loginTime', Date.now().toString());
       
       // Set default authorization header
       api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       console.log('✅ AuthContext: Login successful, user set:', userData);
+      console.log('✅ AuthContext: Login time stored:', new Date().toISOString());
     } catch (error: any) {
       console.error('❌ AuthContext: Login failed:', error);
       console.error('❌ AuthContext: Error response:', error.response?.data);

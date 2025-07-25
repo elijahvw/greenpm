@@ -49,58 +49,22 @@ const PropertyEditModal: React.FC<PropertyEditModalProps> = ({
     if (isOpen && property) {
       console.log('🏠 PropertyEditModal - Property data:', property);
       
-      // Handle address structure - most API responses will have address as string
-      const isAddressObject = typeof property.address === 'object' && property.address !== null;
+      // Use individual fields from API response directly
+      const addressString = (property as any).street || (property as any).address_line1 || '';
+      const city = (property as any).city || '';
+      const state = (property as any).state || '';
+      const zipCode = (property as any).zipCode || (property as any).zip_code || '';
+      const country = 'US';
       
-      let addressString = '';
-      let city = '';
-      let state = '';
-      let zipCode = '';
-      let country = 'US';
-      
-      if (isAddressObject) {
-        // If address is an object, extract fields
-        const addressObj = property.address as {street?: string; city?: string; state?: string; zipCode?: string; country?: string;};
-        addressString = addressObj.street || '';
-        city = addressObj.city || '';
-        state = addressObj.state || '';
-        zipCode = addressObj.zipCode || '';
-        country = addressObj.country || 'US';
-      } else if (typeof property.address === 'string') {
-        // If address is a string, try to parse it into components
-        const addressParts = property.address.split(',').map(part => part.trim());
-        console.log('🏠 PropertyEditModal - Parsing address string:', property.address);
-        console.log('🏠 PropertyEditModal - Address parts:', addressParts);
-        
-        if (addressParts.length >= 1) {
-          addressString = addressParts[0]; // Street address
-        }
-        if (addressParts.length >= 2) {
-          city = addressParts[1]; // City
-        }
-        if (addressParts.length >= 3) {
-          // Last part might be "State ZIP" format
-          const lastPart = addressParts[2];
-          const stateZipMatch = lastPart.match(/^([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
-          if (stateZipMatch) {
-            state = stateZipMatch[1];
-            zipCode = stateZipMatch[2];
-          } else {
-            // If no match, put the whole thing in state field
-            state = lastPart;
-          }
-        }
-        
-        console.log('🏠 PropertyEditModal - Parsed address:', {
-          street: addressString,
-          city: city,
-          state: state,
-          zipCode: zipCode
-        });
-      }
+      console.log('🏠 PropertyEditModal - Using API fields directly:', {
+        street: addressString,
+        city: city,
+        state: state,
+        zipCode: zipCode
+      });
         
       reset({
-        name: property.name || '',
+        name: (property as any).name || property.name || '',
         address: addressString,
         city: city,
         state: state,
@@ -109,12 +73,12 @@ const PropertyEditModal: React.FC<PropertyEditModalProps> = ({
         propertyType: (property.type || 'apartment') as any,
         bedrooms: property.bedrooms || 0,
         bathrooms: property.bathrooms || 0,
-        squareFootage: property.squareFeet || property.square_feet || 0,
-        yearBuilt: new Date().getFullYear(), // Property type doesn't have yearBuilt
+        squareFootage: (property as any).square_feet || property.squareFeet || 0,
+        yearBuilt: new Date().getFullYear(),
         description: property.description || '',
         amenities: Array.isArray(property.amenities) ? property.amenities.join(', ') : '',
-        notes: '', // Property type doesn't have notes
-        monthlyRent: property.rentAmount || property.rent_amount || 0,
+        notes: '',
+        monthlyRent: (property as any).rent_amount || property.rentAmount || 0,
         status: (property.status || 'available') as any,
       });
     }

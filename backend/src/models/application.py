@@ -2,7 +2,7 @@
 Green PM - Application Models
 """
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Numeric, ForeignKey, Enum as SQLEnum, Date
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, synonym
 from sqlalchemy.sql import func
 from enum import Enum
 import uuid
@@ -107,8 +107,8 @@ class Application(Base):
     reviewed_at = Column(DateTime(timezone=True))
     
     # Relationships
-    property_rel = relationship("Property", back_populates="applications")
-    applicant = relationship("User", back_populates="applications")
+    property_rel = relationship("Property", back_populates="applications", lazy="select")
+    applicant = relationship("User", back_populates="applications", lazy="select")
     documents = relationship("ApplicationDocument", back_populates="application", cascade="all, delete-orphan")
     application_fee_payment = relationship("Payment")
     
@@ -120,11 +120,10 @@ class Application(Base):
     def is_approved(self) -> bool:
         return self.status == ApplicationStatus.APPROVED
     
-    @property
     def monthly_income_to_rent_ratio(self) -> float:
-        if not self.monthly_income or not self.property.rent_amount:
+        if not self.monthly_income or not self.property_rel.rent_amount:
             return 0
-        return float(self.monthly_income / self.property.rent_amount)
+        return float(self.monthly_income / self.property_rel.rent_amount)
     
     def __repr__(self):
         return f"<Application(id={self.id}, property_id={self.property_id}, applicant_id={self.applicant_id}, status='{self.status}')>"

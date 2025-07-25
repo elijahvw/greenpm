@@ -24,7 +24,7 @@ export interface Lease {
   // Lease Details
   leaseType?: 'fixed' | 'month-to-month' | 'yearly';
   lease_type?: 'fixed' | 'month-to-month' | 'yearly'; // API uses snake_case
-  status?: 'active' | 'expired' | 'terminated' | 'pending' | 'draft';
+  status?: 'active' | 'expired' | 'terminated' | 'pending' | 'draft' | 'renewed';
   renewalOption?: boolean;
   renewal_option?: boolean; // API uses snake_case
   petPolicy?: {
@@ -98,20 +98,21 @@ export interface CreateLeaseRequest {
   startDate: string;
   endDate: string;
   monthlyRent: number;
-  securityDeposit: number;
-  lateFeePenalty: number;
-  gracePeriodDays: number;
-  leaseType: 'fixed' | 'month-to-month' | 'yearly';
-  renewalOption: boolean;
-  petPolicy: {
+  securityDeposit?: number;
+  lateFeePenalty?: number;
+  gracePeriodDays?: number;
+  leaseType?: 'fixed' | 'month-to-month' | 'yearly';
+  renewalOption?: boolean;
+  status?: 'active' | 'expired' | 'terminated' | 'pending' | 'draft' | 'renewed';
+  petPolicy?: {
     allowed: boolean;
     deposit: number;
     monthlyFee: number;
     restrictions: string;
   };
-  utilitiesIncluded: string[];
-  tenantResponsibilities: string[];
-  landlordResponsibilities: string[];
+  utilitiesIncluded?: string[];
+  tenantResponsibilities?: string[];
+  landlordResponsibilities?: string[];
   specialTerms?: string;
   notes?: string;
 }

@@ -13,6 +13,12 @@ from src.api.v1.endpoints.auth_working import get_current_user, require_admin, r
 router = APIRouter(prefix="/leases", tags=["leases"])
 
 # Pydantic Models
+class PetPolicy(BaseModel):
+    allowed: bool
+    deposit: float = 0.0
+    monthly_fee: float = 0.0
+    restrictions: str = ""
+
 class LeaseBase(BaseModel):
     property_id: str
     tenant_id: str
@@ -22,7 +28,16 @@ class LeaseBase(BaseModel):
     security_deposit: Optional[float] = None
 
 class LeaseCreate(LeaseBase):
-    pass
+    late_fee_penalty: Optional[float] = 0.0
+    grace_period_days: Optional[int] = 5
+    lease_type: Optional[str] = "fixed"
+    renewal_option: Optional[bool] = False
+    pet_policy: Optional[PetPolicy] = None
+    utilities_included: Optional[List[str]] = []
+    tenant_responsibilities: Optional[List[str]] = []
+    landlord_responsibilities: Optional[List[str]] = []
+    special_terms: Optional[str] = None
+    notes: Optional[str] = None
 
 class LeaseUpdate(BaseModel):
     start_date: Optional[str] = None

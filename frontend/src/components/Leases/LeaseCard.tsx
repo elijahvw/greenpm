@@ -62,14 +62,22 @@ const LeaseCard: React.FC<LeaseCardProps> = ({
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
+    // Handle date strings properly to avoid timezone issues
+    const date = dateString.includes('T') 
+      ? new Date(dateString) 
+      : new Date(dateString + 'T00:00:00'); // Treat as local date
+    return date.toLocaleDateString();
   };
 
   const getDaysUntilExpiry = () => {
     const endDateStr = lease.endDate || lease.end_date;
     if (!endDateStr) return 0;
-    const endDate = new Date(endDateStr);
+    // Handle date strings consistently
+    const endDate = endDateStr.includes('T') 
+      ? new Date(endDateStr) 
+      : new Date(endDateStr + 'T00:00:00');
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare dates only
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;

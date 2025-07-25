@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Property, CreatePropertyRequest, UpdatePropertyRequest } from '../types/property';
+import { Property, UpdatePropertyRequest } from '../types/property';
 import { propertyService } from '../services/propertyService';
 import PropertyCard from '../components/Properties/PropertyCard';
 import PropertyForm from '../components/Properties/PropertyForm';
@@ -22,6 +22,7 @@ const Properties: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [leaseStatusFilter, setLeaseStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchProperties();
@@ -30,41 +31,36 @@ const Properties: React.FC = () => {
   const fetchProperties = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Properties - Fetching properties from API...');
       const data = await propertyService.getProperties();
+      console.log('✅ Properties - Received data from API:', data);
       setProperties(data);
+      console.log('✅ Properties - State updated with new data');
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error('❌ Properties - Error fetching properties with lease info:', error);
       toast.error('Failed to load properties');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateProperty = async (data: CreatePropertyRequest) => {
-    try {
-      setFormLoading(true);
-      const newProperty = await propertyService.createProperty(data);
-      setProperties([...properties, newProperty]);
-      setIsFormOpen(false);
-      toast.success('Property created successfully');
-    } catch (error) {
-      console.error('Error creating property:', error);
-      toast.error('Failed to create property');
-    } finally {
-      setFormLoading(false);
-    }
-  };
+
 
   const handleUpdateProperty = async (data: UpdatePropertyRequest) => {
     try {
       setFormLoading(true);
+      console.log('🔄 Updating property:', data);
       const updatedProperty = await propertyService.updateProperty(data);
-      setProperties(properties.map(p => p.id === updatedProperty.id ? updatedProperty : p));
+      console.log('✅ Property updated:', updatedProperty);
+      
+      // Refresh properties to get updated lease information
+      await fetchProperties();
+      
       setIsFormOpen(false);
       setEditingProperty(undefined);
       toast.success('Property updated successfully');
     } catch (error) {
-      console.error('Error updating property:', error);
+      console.error('❌ Error updating property:', error);
       toast.error('Failed to update property');
     } finally {
       setFormLoading(false);
@@ -87,8 +83,14 @@ const Properties: React.FC = () => {
   };
 
   const handleEditProperty = (property: Property) => {
+    console.log('Edit button clicked for property:', property);
+    console.log('Property name fields:', { 
+      name: property.name, 
+      title: (property as any).title,
+      id: property.id 
+    });
     setEditingProperty(property);
-    setIsEditModalOpen(true);
+    setIsFormOpen(true);  // Use the form modal, not edit modal
   };
 
   const handleViewProperty = (property: Property) => {
@@ -100,21 +102,26 @@ const Properties: React.FC = () => {
     try {
       if (!editingProperty?.id) return;
       
-      await propertyService.updateProperty(data as UpdatePropertyRequest);
+      console.log('🔄 Properties - About to update property with data:', data);
+      const result = await propertyService.updateProperty(data as UpdatePropertyRequest);
+      console.log('✅ Properties - Update successful, result:', result);
       toast.success('Property updated successfully!');
-      fetchProperties();
+      
+      console.log('🔄 Properties - Fetching updated properties...');
+      await fetchProperties();
+      console.log('✅ Properties - Properties refreshed');
+      
       setIsEditModalOpen(false);
       setEditingProperty(undefined);
     } catch (error) {
-      console.error('Error updating property:', error);
+      console.error('❌ Properties - Error updating property:', error);
       toast.error('Failed to update property');
       throw error;
     }
   };
 
   const openCreateForm = () => {
-    setEditingProperty(undefined);
-    setIsFormOpen(true);
+    navigate('/dashboard/properties/create');
   };
 
   const closeForm = () => {
@@ -124,17 +131,28 @@ const Properties: React.FC = () => {
 
   // Filter properties based on search and filters
   const filteredProperties = properties.filter(property => {
-    const addressString = typeof property.address === 'string' 
-      ? property.address 
-      : `${property.address.street} ${property.address.city}`;
+    // Handle different address formats from API
+    let addressString = '';
+    if (typeof property.address === 'string') {
+      addressString = property.address;
+    } else if (property.address && typeof property.address === 'object') {
+      addressString = `${property.address.street || ''} ${property.address.city || ''}`;
+    } else {
+      // Use individual fields from API
+      const street = (property as any).street || (property as any).address_line1 || '';
+      const city = (property as any).city || '';
+      addressString = `${street} ${city}`;
+    }
     
-    const matchesSearch = property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const propertyName = (property as any).name || (property as any).title || '';
+    const matchesSearch = propertyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          addressString.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || (property.status || 'available') === statusFilter;
     const matchesType = typeFilter === 'all' || property.type === typeFilter;
+    const matchesLeaseStatus = leaseStatusFilter === 'all' || (property.lease_status || 'vacant') === leaseStatusFilter;
 
-    return matchesSearch && matchesStatus && matchesType;
+    return matchesSearch && matchesStatus && matchesType && matchesLeaseStatus;
   });
 
   const getStatusCounts = () => {
@@ -147,7 +165,17 @@ const Properties: React.FC = () => {
     };
   };
 
+  const getLeaseStatusCounts = () => {
+    return {
+      all: properties.length,
+      vacant: properties.filter(p => (p.lease_status || 'vacant') === 'vacant').length,
+      occupied: properties.filter(p => (p.lease_status || 'vacant') === 'occupied').length,
+      pending: properties.filter(p => (p.lease_status || 'vacant') === 'pending').length,
+    };
+  };
+
   const statusCounts = getStatusCounts();
+  const leaseStatusCounts = getLeaseStatusCounts();
 
   if (loading) {
     return (
@@ -276,7 +304,7 @@ const Properties: React.FC = () => {
 
       {/* Search and Filters */}
       <div className="bg-white shadow rounded-lg p-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -288,6 +316,19 @@ const Properties: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
             />
+          </div>
+
+          <div>
+            <select
+              value={leaseStatusFilter}
+              onChange={(e) => setLeaseStatusFilter(e.target.value)}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
+            >
+              <option value="all">All Lease Status</option>
+              <option value="vacant">Vacant</option>
+              <option value="occupied">Occupied</option>
+              <option value="pending">Pending</option>
+            </select>
           </div>
 
           <div>
@@ -363,20 +404,18 @@ const Properties: React.FC = () => {
         </div>
       )}
 
-      {/* Property Form Modal */}
-      <PropertyForm
-        property={editingProperty}
-        isOpen={isFormOpen}
-        onClose={closeForm}
-        onSubmit={async (data) => {
-          if (editingProperty) {
+      {/* Property Edit Form Modal - Only for editing existing properties */}
+      {editingProperty && (
+        <PropertyForm
+          property={editingProperty}
+          isOpen={isFormOpen}
+          onClose={closeForm}
+          onSubmit={async (data) => {
             await handleUpdateProperty(data as UpdatePropertyRequest);
-          } else {
-            await handleCreateProperty(data as CreatePropertyRequest);
-          }
-        }}
-        loading={formLoading}
-      />
+          }}
+          loading={formLoading}
+        />
+      )}
 
       {/* Property View Modal */}
       {viewingProperty && (

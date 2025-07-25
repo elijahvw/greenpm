@@ -7,8 +7,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Properties from './pages/Properties';
+import CreateProperty from './pages/CreateProperty';
 import Tenants from './pages/Tenants';
 import Leases from './pages/Leases';
+import CreateLease from './pages/CreateLease';
 
 import Accounting from './pages/Accounting';
 import Applications from './pages/Applications';
@@ -51,8 +53,10 @@ function App() {
               <Route index element={<RoleDashboard />} />
               <Route path="rentals" element={<Properties />} />
               <Route path="properties" element={<Properties />} />
+              <Route path="properties/create" element={<CreateProperty />} />
               <Route path="tenants" element={<Tenants />} />
               <Route path="leases" element={<Leases />} />
+              <Route path="leases/create" element={<CreateLease />} />
               <Route path="leasing" element={<Leases />} />
 
               <Route path="associations" element={<div>Associations coming soon...</div>} />

@@ -87,7 +87,7 @@ class Property(Base):
     images = relationship("PropertyImage", back_populates="property", cascade="all, delete-orphan")
     amenities = relationship("PropertyAmenity", back_populates="property", cascade="all, delete-orphan")
     leases = relationship("Lease", back_populates="property_rel")
-    applications = relationship("Application", back_populates="property")
+    applications = relationship("Application", back_populates="property_rel")
     maintenance_requests = relationship("MaintenanceRequest", back_populates="property")
     
     @property

@@ -3,6 +3,7 @@ import { Dialog } from '@headlessui/react';
 import { useForm } from 'react-hook-form';
 import { XMarkIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Lease, UpdateLeaseRequest } from '../../types/lease';
+import { roundToCents } from '../../utils/currency';
 
 interface LeaseEditModalProps {
   isOpen: boolean;
@@ -50,7 +51,7 @@ const LeaseEditModal: React.FC<LeaseEditModalProps> = ({
         startDate: (lease.start_date || lease.startDate || '').split('T')[0],
         endDate: (lease.end_date || lease.endDate || '').split('T')[0],
         leaseType: (lease.lease_type || lease.leaseType || 'fixed') as 'fixed' | 'month-to-month' | 'yearly',
-        status: (lease.status || 'active') as 'active' | 'expired' | 'terminated' | 'pending' | 'draft',
+        status: (lease.status?.toLowerCase() || 'active') as 'active' | 'expired' | 'terminated' | 'pending' | 'draft',
         notes: lease.notes || '',
         specialTerms: lease.special_terms || lease.specialTerms || '',
       });
@@ -66,9 +67,9 @@ const LeaseEditModal: React.FC<LeaseEditModalProps> = ({
       
       const updateData: UpdateLeaseRequest = {
         id: lease.id,
-        monthlyRent: Math.round((data.monthlyRent || 0) * 100) / 100, // Fix currency precision
-        securityDeposit: Math.round((data.securityDeposit || 0) * 100) / 100,
-        lateFeePenalty: Math.round((data.lateFeePenalty || 0) * 100) / 100,
+        monthlyRent: roundToCents(data.monthlyRent || 0),
+        securityDeposit: roundToCents(data.securityDeposit || 0),
+        lateFeePenalty: roundToCents(data.lateFeePenalty || 0),
         gracePeriodDays: data.gracePeriodDays,
         startDate: data.startDate,
         endDate: data.endDate,
