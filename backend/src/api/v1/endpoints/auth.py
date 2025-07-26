@@ -60,6 +60,8 @@ async def login(
         from sqlalchemy import text
         from src.core.security import SecurityManager
         
+        logger.info(f"🔐 Login attempt for: {request.email}")
+        
         # Get user directly with raw SQL to avoid relationship issues
         result = await db.execute(
             text("""
@@ -67,7 +69,10 @@ async def login(
                        phone, avatar_url, bio, address_line1, address_line2, city, state, 
                        zip_code, country, email_verified, phone_verified, identity_verified,
                        two_factor_enabled, notification_email, notification_sms, 
-                       notification_push, created_at, updated_at, last_login
+                       notification_push, created_at, updated_at, last_login,
+                       date_of_birth, social_security_number, notes, move_in_date, move_out_date,
+                       employer, position, monthly_income, employment_start_date,
+                       emergency_contact_name, emergency_contact_phone, emergency_contact_relationship
                 FROM users 
                 WHERE email = :email
             """),
@@ -77,14 +82,21 @@ async def login(
         user_row = result.fetchone()
         
         if not user_row:
+            logger.warning(f"❌ User not found: {request.email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
             )
         
+        logger.info(f"✅ User found: {user_row.email}, status: {user_row.status}")
+        
         # Verify password
         security_manager = SecurityManager()
-        if not security_manager.verify_password(request.password, user_row.hashed_password):
+        password_valid = security_manager.verify_password(request.password, user_row.hashed_password)
+        logger.info(f"🔑 Password valid: {password_valid}")
+        
+        if not password_valid:
+            logger.warning(f"❌ Invalid password for: {request.email}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password"
@@ -92,13 +104,14 @@ async def login(
         
         # Check if user is active
         if user_row.status != 'ACTIVE':
+            logger.warning(f"❌ Account not active: {user_row.status}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Account is not active"
             )
         
         # Generate access token
-        access_token = security.create_access_token(
+        access_token = security_manager.create_access_token(
             data={
                 "sub": str(user_row.id),
                 "email": user_row.email,
@@ -140,7 +153,20 @@ async def login(
             notification_push=user_row.notification_push or True,
             created_at=user_row.created_at,
             updated_at=user_row.updated_at,
-            last_login=user_row.last_login
+            last_login=user_row.last_login,
+            # Additional fields
+            date_of_birth=user_row.date_of_birth,
+            social_security_number=user_row.social_security_number,
+            notes=user_row.notes,
+            move_in_date=user_row.move_in_date,
+            move_out_date=user_row.move_out_date,
+            employer=user_row.employer,
+            position=user_row.position,
+            monthly_income=user_row.monthly_income,
+            employment_start_date=user_row.employment_start_date,
+            emergency_contact_name=user_row.emergency_contact_name,
+            emergency_contact_phone=user_row.emergency_contact_phone,
+            emergency_contact_relationship=user_row.emergency_contact_relationship
         )
         
         return LoginResponse(
@@ -304,7 +330,10 @@ async def get_current_user_info(
                        phone, avatar_url, bio, address_line1, address_line2, city, state, 
                        zip_code, country, email_verified, phone_verified, identity_verified,
                        two_factor_enabled, notification_email, notification_sms, 
-                       notification_push, created_at, updated_at, last_login
+                       notification_push, created_at, updated_at, last_login,
+                       date_of_birth, social_security_number, notes, move_in_date, move_out_date,
+                       employer, position, monthly_income, employment_start_date,
+                       emergency_contact_name, emergency_contact_phone, emergency_contact_relationship
                 FROM users 
                 WHERE id = :user_id
             """),
@@ -353,7 +382,20 @@ async def get_current_user_info(
             notification_push=user_row.notification_push or True,
             created_at=user_row.created_at,
             updated_at=user_row.updated_at,
-            last_login=user_row.last_login
+            last_login=user_row.last_login,
+            # Additional fields
+            date_of_birth=user_row.date_of_birth,
+            social_security_number=user_row.social_security_number,
+            notes=user_row.notes,
+            move_in_date=user_row.move_in_date,
+            move_out_date=user_row.move_out_date,
+            employer=user_row.employer,
+            position=user_row.position,
+            monthly_income=user_row.monthly_income,
+            employment_start_date=user_row.employment_start_date,
+            emergency_contact_name=user_row.emergency_contact_name,
+            emergency_contact_phone=user_row.emergency_contact_phone,
+            emergency_contact_relationship=user_row.emergency_contact_relationship
         )
         
         return user_data

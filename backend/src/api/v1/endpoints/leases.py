@@ -199,9 +199,9 @@ async def create_lease(lease_data: dict, db: AsyncSession = Depends(get_db)):
         late_fee = float(lease_data.get("lateFeePenalty") or lease_data.get("late_fee_penalty") or lease_data.get("late_fee_amount", 0))
         late_fee_grace_days = int(lease_data.get("gracePeriodDays") or lease_data.get("grace_period_days") or lease_data.get("late_fee_grace_period", 5))
         
-        # Look up tenant details from database
+        # Look up tenant details from database (convert tenant_id to int)
         tenant_query = text("SELECT id, first_name, last_name, email FROM users WHERE id = :tenant_id")
-        tenant_result = await db.execute(tenant_query, {"tenant_id": tenant_id})
+        tenant_result = await db.execute(tenant_query, {"tenant_id": int(tenant_id)})
         tenant_row = tenant_result.fetchone()
         
         if not tenant_row:
@@ -269,7 +269,7 @@ async def create_lease(lease_data: dict, db: AsyncSession = Depends(get_db)):
         
         lease_result = await db.execute(create_lease_query, {
             "property_id": property_id,
-            "tenant_id": tenant_id,
+            "tenant_id": int(tenant_id),
             "start_date": datetime.fromisoformat(start_date).date() if start_date else None,
             "end_date": datetime.fromisoformat(end_date).date() if end_date else None,
             "monthly_rent": monthly_rent,

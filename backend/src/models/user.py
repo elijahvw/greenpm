@@ -1,7 +1,7 @@
 """
-Green PM - User Model
+Green PM - User Model (Multi-tenant Enhanced)
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from enum import Enum
@@ -10,7 +10,8 @@ import uuid
 from src.core.database import Base
 
 class UserRole(str, Enum):
-    ADMIN = "ADMIN"
+    PLATFORM_ADMIN = "PLATFORM_ADMIN"  # Internal staff with access to all companies
+    ADMIN = "ADMIN"  # Company admin
     LANDLORD = "LANDLORD"
     TENANT = "TENANT"
 
@@ -25,6 +26,9 @@ class User(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
+    
+    # Multi-tenant support
+    company_id = Column(Integer, ForeignKey("companies.id"), index=True)  # NULL for platform admins
     
     # Basic info
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -43,6 +47,22 @@ class User(Base):
     # Profile
     avatar_url = Column(String(500))
     bio = Column(Text)
+    date_of_birth = Column(String(20))
+    social_security_number = Column(String(20))
+    notes = Column(Text)
+    move_in_date = Column(String(20))
+    move_out_date = Column(String(20))
+    
+    # Employment Information
+    employer = Column(String(255))
+    position = Column(String(255))
+    monthly_income = Column(Integer)
+    employment_start_date = Column(String(20))
+    
+    # Emergency Contact
+    emergency_contact_name = Column(String(255))
+    emergency_contact_phone = Column(String(20))
+    emergency_contact_relationship = Column(String(100))
     
     # Address
     address_line1 = Column(String(255))
@@ -74,6 +94,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
+    company = relationship("Company", back_populates="users")
     owned_properties = relationship("Property", back_populates="owner", foreign_keys="Property.owner_id")
     leases = relationship("Lease", back_populates="tenant", foreign_keys="Lease.tenant_id")
     payments = relationship("Payment", back_populates="user")
@@ -81,7 +102,7 @@ class User(Base):
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="Message.sender_id")
     received_messages = relationship("Message", back_populates="recipient", foreign_keys="Message.recipient_id")
     applications = relationship("Application", back_populates="applicant")
-    audit_logs = relationship("AuditLog", back_populates="user")
+    audit_logs = relationship("AuditLog", back_populates="user", foreign_keys="AuditLog.user_id")
     
     @property
     def full_name(self) -> str:
@@ -98,6 +119,10 @@ class User(Base):
     @property
     def is_admin(self) -> bool:
         return self.role == UserRole.ADMIN
+    
+    @property
+    def is_platform_admin(self) -> bool:
+        return self.role == UserRole.PLATFORM_ADMIN
     
     @property
     def is_active(self) -> bool:

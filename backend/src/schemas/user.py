@@ -21,6 +21,24 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
     phone: Optional[str] = Field(None, max_length=20)
     bio: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    social_security_number: Optional[str] = None
+    notes: Optional[str] = None
+    move_in_date: Optional[str] = None
+    move_out_date: Optional[str] = None
+    
+    # Employment Information
+    employer: Optional[str] = None
+    position: Optional[str] = None
+    monthly_income: Optional[int] = None
+    employment_start_date: Optional[str] = None
+    
+    # Emergency Contact
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    emergency_contact_relationship: Optional[str] = None
+    
+    # Address
     address_line1: Optional[str] = None
     address_line2: Optional[str] = None
     city: Optional[str] = None
@@ -42,6 +60,24 @@ class UserResponse(BaseModel):
     status: UserStatus
     avatar_url: Optional[str]
     bio: Optional[str]
+    date_of_birth: Optional[str]
+    social_security_number: Optional[str]
+    notes: Optional[str]
+    move_in_date: Optional[str]
+    move_out_date: Optional[str]
+    
+    # Employment Information
+    employer: Optional[str]
+    position: Optional[str]
+    monthly_income: Optional[int]
+    employment_start_date: Optional[str]
+    
+    # Emergency Contact
+    emergency_contact_name: Optional[str]
+    emergency_contact_phone: Optional[str]
+    emergency_contact_relationship: Optional[str]
+    
+    # Address
     address_line1: Optional[str]
     address_line2: Optional[str]
     city: Optional[str]

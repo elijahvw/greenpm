@@ -27,6 +27,9 @@ class MessageThread(Base):
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
     
+    # Multi-tenant support
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    
     # Thread participants
     participant1_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     participant2_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -49,6 +52,7 @@ class MessageThread(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
+    company = relationship("Company", back_populates="messages")
     participant1 = relationship("User", foreign_keys=[participant1_id])
     participant2 = relationship("User", foreign_keys=[participant2_id])
     property_rel = relationship("Property")
@@ -68,6 +72,9 @@ class Message(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
+    
+    # Multi-tenant support
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
     
     # Message relationships
     thread_id = Column(Integer, ForeignKey("message_threads.id"), nullable=False)
@@ -107,6 +114,7 @@ class Message(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
+    company = relationship("Company", back_populates="messages")
     thread = relationship("MessageThread", back_populates="messages")
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
     recipient = relationship("User", back_populates="received_messages", foreign_keys=[recipient_id])

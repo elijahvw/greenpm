@@ -34,24 +34,35 @@ export const tenantService = {
         lastName: tenant.lastName || tenant.last_name || '',
         email: tenant.email || '',
         phone: tenant.phone || '',
-        // Additional fields with defaults
-        dateOfBirth: '',
-        emergencyContact: {
+        dateOfBirth: tenant.dateOfBirth || '',
+        socialSecurityNumber: tenant.socialSecurityNumber || '',
+        emergencyContact: tenant.emergencyContact || {
           name: '',
           phone: '',
           relationship: ''
         },
-        employment: {
+        employment: tenant.employment || {
           employer: '',
           position: '',
           monthlyIncome: 0,
           employmentStartDate: ''
         },
+        address: tenant.address || {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'US'
+        },
+        status: tenant.status || 'active',
+        moveInDate: tenant.moveInDate || '',
+        moveOutDate: tenant.moveOutDate || '',
+        notes: tenant.notes || '',
         documents: [],
         leaseHistory: [],
         paymentHistory: [],
-        createdAt: tenant.created_at || '',
-        updatedAt: tenant.updated_at || '',
+        createdAt: tenant.created_at || tenant.createdAt || '',
+        updatedAt: tenant.updated_at || tenant.updatedAt || '',
         isActive: tenant.status === 'active',
         // Current lease info - would need additional API call to get this
         currentProperty: '',
@@ -67,13 +78,57 @@ export const tenantService = {
 
   // Get a single tenant by ID
   async getTenant(id: string): Promise<Tenant> {
-    const response = await api.get(`/tenants/${id}`);
-    return response.data;
+    const response = await api.get(`/users/tenants/${id}`);
+    const tenant = response.data;
+    
+    // Transform tenant data to match expected interface
+    return {
+      id: tenant.id,
+      firstName: tenant.firstName || tenant.first_name || '',
+      lastName: tenant.lastName || tenant.last_name || '',
+      email: tenant.email || '',
+      phone: tenant.phone || '',
+      dateOfBirth: tenant.dateOfBirth || '',
+      socialSecurityNumber: tenant.socialSecurityNumber || '',
+      emergencyContact: tenant.emergencyContact || {
+        name: '',
+        phone: '',
+        relationship: ''
+      },
+      employment: tenant.employment || {
+        employer: '',
+        position: '',
+        monthlyIncome: 0,
+        employmentStartDate: ''
+      },
+      address: tenant.address || {
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: 'US'
+      },
+      status: tenant.status || 'active',
+      moveInDate: tenant.moveInDate || '',
+      moveOutDate: tenant.moveOutDate || '',
+      notes: tenant.notes || '',
+      documents: [],
+      createdAt: tenant.created_at || tenant.createdAt || '',
+      updatedAt: tenant.updated_at || tenant.updatedAt || '',
+      isActive: tenant.status === 'active',
+      // Current lease info - would need additional API call to get this
+      currentProperty: '',
+      currentRent: 0,
+      leaseStartDate: '',
+      leaseEndDate: '',
+      leaseHistory: [],
+      paymentHistory: []
+    };
   },
 
   // Create a new tenant
   async createTenant(tenant: CreateTenantRequest): Promise<Tenant> {
-    const response = await api.post('/tenants', tenant);
+    const response = await api.post('/users/tenants', tenant);
     return response.data;
   },
 
@@ -85,7 +140,7 @@ export const tenantService = {
 
   // Delete a tenant
   async deleteTenant(id: string): Promise<void> {
-    await api.delete(`/tenants/${id}`);
+    await api.delete(`/users/tenants/${id}`);
   },
 
   // Upload tenant documents

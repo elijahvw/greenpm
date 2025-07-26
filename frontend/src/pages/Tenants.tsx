@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tenant, CreateTenantRequest, UpdateTenantRequest } from '../types/tenant';
+import { Lease } from '../types/lease';
 import { tenantService } from '../services/tenantService';
+import { leaseService } from '../services/leaseService';
 import TenantCard from '../components/Tenants/TenantCard';
 import TenantForm from '../components/Tenants/TenantForm';
 import TenantEditModal from '../components/Tenants/TenantEditModal';
@@ -8,7 +11,9 @@ import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 const Tenants: React.FC = () => {
+  const navigate = useNavigate();
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [leases, setLeases] = useState<Lease[]>([]);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -21,11 +26,21 @@ const Tenants: React.FC = () => {
     fetchTenants();
   }, []);
 
+  const getTenantLeases = (tenantId: string): Lease[] => {
+    return leases.filter(lease => 
+      lease.tenant_id === tenantId || lease.tenantId === tenantId
+    );
+  };
+
   const fetchTenants = async () => {
     try {
       setLoading(true);
-      const data = await tenantService.getTenants();
-      setTenants(data);
+      const [tenantsData, leasesData] = await Promise.all([
+        tenantService.getTenants(),
+        leaseService.getLeases()
+      ]);
+      setTenants(tenantsData);
+      setLeases(leasesData);
     } catch (error) {
       console.error('Error fetching tenants:', error);
       toast.error('Failed to load tenants');
@@ -74,9 +89,16 @@ const Tenants: React.FC = () => {
       await tenantService.deleteTenant(tenantId);
       setTenants(tenants.filter(t => t.id !== tenantId));
       toast.success('Tenant deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting tenant:', error);
-      toast.error('Failed to delete tenant');
+      
+      // Check if it's a 400 error (tenant has active leases)
+      if (error?.response?.status === 400) {
+        const errorMessage = error?.response?.data?.detail || 'Cannot delete tenant with active leases';
+        toast.error(errorMessage);
+      } else {
+        toast.error('Failed to delete tenant');
+      }
     }
   };
 
@@ -86,8 +108,7 @@ const Tenants: React.FC = () => {
   };
 
   const handleViewTenant = (tenant: Tenant) => {
-    // TODO: Navigate to tenant detail page
-    console.log('View tenant:', tenant);
+    navigate(`/dashboard/tenants/${tenant.id}`);
   };
 
   const handleEditSubmit = async (data: Partial<Tenant>) => {
@@ -331,6 +352,7 @@ const Tenants: React.FC = () => {
             <TenantCard
               key={tenant.id}
               tenant={tenant}
+              leases={getTenantLeases(tenant.id)}
               onEdit={handleEditTenant}
               onDelete={handleDeleteTenant}
               onView={handleViewTenant}

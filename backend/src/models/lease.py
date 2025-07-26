@@ -28,6 +28,9 @@ class Lease(Base):
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
     
+    # Multi-tenant support
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    
     # Parties
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -76,6 +79,7 @@ class Lease(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
+    company = sa_relationship("Company", back_populates="leases")
     property_rel = sa_relationship("Property", back_populates="leases")
     tenant = sa_relationship("User", back_populates="leases", foreign_keys=[tenant_id])
     landlord = sa_relationship("User", foreign_keys=[landlord_id])

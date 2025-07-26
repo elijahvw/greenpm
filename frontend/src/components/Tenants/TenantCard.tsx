@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tenant } from '../../types/tenant';
+import { Lease } from '../../types/lease';
 import { 
   UserIcon, 
   EnvelopeIcon, 
@@ -13,6 +14,7 @@ import {
 
 interface TenantCardProps {
   tenant: Tenant;
+  leases?: Lease[];
   onEdit: (tenant: Tenant) => void;
   onDelete: (tenantId: string) => void;
   onView: (tenant: Tenant) => void;
@@ -20,6 +22,7 @@ interface TenantCardProps {
 
 const TenantCard: React.FC<TenantCardProps> = ({ 
   tenant, 
+  leases = [],
   onEdit, 
   onDelete, 
   onView 
@@ -37,6 +40,53 @@ const TenantCard: React.FC<TenantCardProps> = ({
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getLeaseStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'expired':
+        return 'bg-red-100 text-red-800';
+      case 'terminated':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getLeaseStatus = () => {
+    if (!leases || leases.length === 0) {
+      return { status: 'No Active Lease', color: 'bg-gray-100 text-gray-800' };
+    }
+
+    const activeLease = leases.find(lease => lease.status?.toLowerCase() === 'active');
+    if (activeLease) {
+      return { 
+        status: 'Active Lease', 
+        color: getLeaseStatusColor('active'),
+        property: activeLease.property_name || activeLease.property_address || 'Property'
+      };
+    }
+
+    const pendingLease = leases.find(lease => lease.status?.toLowerCase() === 'pending');
+    if (pendingLease) {
+      return { 
+        status: 'Pending Lease', 
+        color: getLeaseStatusColor('pending'),
+        property: pendingLease.property_name || pendingLease.property_address || 'Property'
+      };
+    }
+
+    const latestLease = leases[0];
+    const status = latestLease.status || 'unknown';
+    return { 
+      status: status.charAt(0).toUpperCase() + status.slice(1),
+      color: getLeaseStatusColor(status),
+      property: latestLease.property_name || latestLease.property_address || 'Property'
+    };
   };
 
   const formatPhoneNumber = (phone: string) => {
@@ -94,61 +144,20 @@ const TenantCard: React.FC<TenantCardProps> = ({
           </div>
         </div>
 
-        {/* Employment Information */}
-        {tenant.employment && tenant.employment.employer && (
-          <div className="mt-4">
-            <div className="flex items-center text-sm text-gray-600 mb-1">
-              <BriefcaseIcon className="h-4 w-4 mr-2" />
-              <span className="font-medium">{tenant.employment.employer}</span>
-            </div>
-            <div className="ml-6 text-sm text-gray-500">
-              <p>{tenant.employment.position}</p>
-              <div className="flex items-center mt-1">
-                <CurrencyDollarIcon className="h-3 w-3 mr-1" />
-                <span>${(tenant.employment.monthlyIncome || 0).toLocaleString()}/month</span>
-              </div>
-            </div>
+        {/* Lease Status */}
+        <div className="mt-4 p-3 bg-gray-50 rounded-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-700">Lease Status</span>
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getLeaseStatus().color}`}>
+              {getLeaseStatus().status}
+            </span>
           </div>
-        )}
-
-        {/* Address */}
-        <div className="mt-4">
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Address:</span> {formatAddress(tenant.address)}
-          </p>
+          {getLeaseStatus().property && getLeaseStatus().status !== 'No Active Lease' && (
+            <div className="mt-1">
+              <span className="text-xs text-gray-500">{getLeaseStatus().property}</span>
+            </div>
+          )}
         </div>
-
-        {/* Move-in Date */}
-        {tenant.moveInDate && (
-          <div className="mt-2">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Move-in Date:</span>{' '}
-              {new Date(tenant.moveInDate).toLocaleDateString()}
-            </p>
-          </div>
-        )}
-
-        {/* Emergency Contact */}
-        {tenant.emergencyContact && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-md">
-            <p className="text-xs font-medium text-gray-700 mb-1">Emergency Contact</p>
-            <p className="text-sm text-gray-600">
-              {tenant.emergencyContact.name} ({tenant.emergencyContact.relationship})
-            </p>
-            <p className="text-sm text-gray-600">
-              {formatPhoneNumber(tenant.emergencyContact.phone)}
-            </p>
-          </div>
-        )}
-
-        {/* Notes */}
-        {tenant.notes && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">Notes:</span> {tenant.notes}
-            </p>
-          </div>
-        )}
 
         {/* Action Buttons */}
         <div className="flex space-x-2 pt-4 border-t border-gray-200 mt-4">

@@ -41,6 +41,9 @@ class MaintenanceRequest(Base):
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
     
+    # Multi-tenant support
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    
     # Relationships
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -86,6 +89,7 @@ class MaintenanceRequest(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
+    company = relationship("Company", back_populates="maintenance_requests")
     property_rel = relationship("Property", back_populates="maintenance_requests")
     tenant = relationship("User", back_populates="maintenance_requests", foreign_keys=[tenant_id])
     assigned_to = relationship("User", foreign_keys=[assigned_to_id])

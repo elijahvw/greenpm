@@ -41,6 +41,9 @@ class Payment(Base):
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
     
+    # Multi-tenant support
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    
     # Relationships
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     lease_id = Column(Integer, ForeignKey("leases.id"))
@@ -82,6 +85,7 @@ class Payment(Base):
     processed_at = Column(DateTime(timezone=True))
     
     # Relationships
+    company = relationship("Company", back_populates="payments")
     user = relationship("User", back_populates="payments")
     lease = relationship("Lease", back_populates="payments")
     property_rel = relationship("Property")

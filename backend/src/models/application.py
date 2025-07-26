@@ -23,6 +23,9 @@ class Application(Base):
     id = Column(Integer, primary_key=True, index=True)
     uuid = Column(String(36), unique=True, index=True, default=lambda: str(uuid.uuid4()))
     
+    # Multi-tenant support
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False, index=True)
+    
     # Relationships
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
     applicant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -107,6 +110,7 @@ class Application(Base):
     reviewed_at = Column(DateTime(timezone=True))
     
     # Relationships
+    company = relationship("Company", back_populates="applications")
     property_rel = relationship("Property", back_populates="applications", lazy="select")
     applicant = relationship("User", back_populates="applications", lazy="select")
     documents = relationship("ApplicationDocument", back_populates="application", cascade="all, delete-orphan")

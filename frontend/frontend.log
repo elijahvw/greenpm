@@ -12831,3 +12831,958 @@ src/pages/Properties.tsx
 
 webpack compiled with 1 warning
 No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+Files successfully emitted, waiting for typecheck results...
+Issues checking in progress...
+ERROR in src/pages/TenantDetail.tsx:64:17
+TS2345: Argument of type 'Lease[]' is not assignable to parameter of type 'SetStateAction<Lease[]>'.
+  Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease[]' is not assignable to type 'Lease[]'.
+    Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease' is not assignable to type 'Lease'.
+      Types of property 'propertyId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+    62 |         lease.tenant_id === tenantId || lease.tenantId === tenantId
+    63 |       );
+  > 64 |       setLeases(tenantLeases);
+       |                 ^^^^^^^^^^^^
+    65 |       
+    66 |     } catch (error) {
+    67 |       console.error('Error fetching tenant data:', error);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 16:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/TenantDetail.tsx:64:17
+TS2345: Argument of type 'Lease[]' is not assignable to parameter of type 'SetStateAction<Lease[]>'.
+  Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease[]' is not assignable to type 'Lease[]'.
+    Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease' is not assignable to type 'Lease'.
+      Types of property 'propertyId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+    62 |         lease.tenant_id === tenantId || lease.tenantId === tenantId
+    63 |       );
+  > 64 |       setLeases(tenantLeases);
+       |                 ^^^^^^^^^^^^
+    65 |       
+    66 |     } catch (error) {
+    67 |       console.error('Error fetching tenant data:', error);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 12:8:  'TenantDetail' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 12:8:  'TenantDetail' is defined but never used  @typescript-eslint/no-unused-vars
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/TenantDetail.tsx:64:17
+TS2345: Argument of type 'Lease[]' is not assignable to parameter of type 'SetStateAction<Lease[]>'.
+  Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease[]' is not assignable to type 'Lease[]'.
+    Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease' is not assignable to type 'Lease'.
+      Types of property 'propertyId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+    62 |         lease.tenant_id === tenantId || lease.tenantId === tenantId
+    63 |       );
+  > 64 |       setLeases(tenantLeases);
+       |                 ^^^^^^^^^^^^
+    65 |       
+    66 |     } catch (error) {
+    67 |       console.error('Error fetching tenant data:', error);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+ERROR in src/pages/TenantDetail.tsx:64:17
+TS2345: Argument of type 'Lease[]' is not assignable to parameter of type 'SetStateAction<Lease[]>'.
+  Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease[]' is not assignable to type 'Lease[]'.
+    Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease' is not assignable to type 'Lease'.
+      Types of property 'propertyId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+    62 |         lease.tenant_id === tenantId || lease.tenantId === tenantId
+    63 |       );
+  > 64 |       setLeases(tenantLeases);
+       |                 ^^^^^^^^^^^^
+    65 |       
+    66 |     } catch (error) {
+    67 |       console.error('Error fetching tenant data:', error);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Tenants.tsx
+  Line 2:10:  'useNavigate' is defined but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Tenants.tsx
+  Line 2:10:  'useNavigate' is defined but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/TenantDetail.tsx:64:17
+TS2345: Argument of type 'Lease[]' is not assignable to parameter of type 'SetStateAction<Lease[]>'.
+  Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease[]' is not assignable to type 'Lease[]'.
+    Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease' is not assignable to type 'Lease'.
+      Types of property 'propertyId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+    62 |         lease.tenant_id === tenantId || lease.tenantId === tenantId
+    63 |       );
+  > 64 |       setLeases(tenantLeases);
+       |                 ^^^^^^^^^^^^
+    65 |       
+    66 |     } catch (error) {
+    67 |       console.error('Error fetching tenant data:', error);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Tenants.tsx
+  Line 12:9:  'navigate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/Tenants.tsx
+  Line 12:9:  'navigate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/TenantDetail.tsx:64:17
+TS2345: Argument of type 'Lease[]' is not assignable to parameter of type 'SetStateAction<Lease[]>'.
+  Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease[]' is not assignable to type 'Lease[]'.
+    Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease' is not assignable to type 'Lease'.
+      Types of property 'propertyId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+    62 |         lease.tenant_id === tenantId || lease.tenantId === tenantId
+    63 |       );
+  > 64 |       setLeases(tenantLeases);
+       |                 ^^^^^^^^^^^^
+    65 |       
+    66 |     } catch (error) {
+    67 |       console.error('Error fetching tenant data:', error);
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/App.tsx
+  Line 17:8:  'Applications' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/components/Leases/LeaseCreateModal.tsx
+  Line 90:6:  React Hook useEffect has a missing dependency: 'loadPropertiesAndTenants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Leases/LeaseForm.tsx
+  Line 47:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'resetForm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/components/Properties/PropertyCard.tsx
+  Line 46:9:  'getStatusColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyForm.tsx
+  Line 4:21:  'PhotoIcon' is defined but never used       @typescript-eslint/no-unused-vars
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/components/Properties/PropertyViewModal.tsx
+  Line 1:17:  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  Line 1:27:  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 3:10:  'Lease' is defined but never used         @typescript-eslint/no-unused-vars
+  Line 4:10:  'leaseService' is defined but never used  @typescript-eslint/no-unused-vars
+
+src/pages/CreateLease.tsx
+  Line 78:6:  React Hook useEffect has missing dependencies: 'loadPropertiesAndTenants' and 'setDefaultValues'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+src/pages/CreateProperty.tsx
+  Line 30:5:  'watch' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Leases.tsx
+  Line 275:9:  'handleCreateSubmit' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/Properties.tsx
+  Line 9:41:   'FunnelIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+  Line 178:9:  'leaseStatusCounts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/TenantDetail.tsx
+  Line 20:3:  'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  Line 21:3:  'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+  Line 49:6:  React Hook useEffect has a missing dependency: 'fetchTenantData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+webpack compiled with 1 warning
+ERROR in src/pages/TenantDetail.tsx:64:17
+TS2345: Argument of type 'Lease[]' is not assignable to parameter of type 'SetStateAction<Lease[]>'.
+  Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease[]' is not assignable to type 'Lease[]'.
+    Type 'import("/Users/elijahward/Documents/greenpm/frontend/src/types/lease").Lease' is not assignable to type 'Lease'.
+      Types of property 'propertyId' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+    62 |         lease.tenant_id === tenantId || lease.tenantId === tenantId
+    63 |       );
+  > 64 |       setLeases(tenantLeases);
+       |                 ^^^^^^^^^^^^
+    65 |       
+    66 |     } catch (error) {
+    67 |       console.error('Error fetching tenant data:', error);
+
+The build failed because the process exited too early. This probably means the system ran out of memory or someone called `kill -9` on the process.

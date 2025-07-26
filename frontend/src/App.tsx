@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Properties from './pages/Properties';
 import CreateProperty from './pages/CreateProperty';
 import Tenants from './pages/Tenants';
+import TenantDetail from './pages/TenantDetail';
 import Leases from './pages/Leases';
 import CreateLease from './pages/CreateLease';
 
@@ -55,6 +56,7 @@ function App() {
               <Route path="properties" element={<Properties />} />
               <Route path="properties/create" element={<CreateProperty />} />
               <Route path="tenants" element={<Tenants />} />
+              <Route path="tenants/:tenantId" element={<TenantDetail />} />
               <Route path="leases" element={<Leases />} />
               <Route path="leases/create" element={<CreateLease />} />
               <Route path="leasing" element={<Leases />} />
