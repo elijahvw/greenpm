@@ -35,3 +35,8 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+node_modules/
+.cache/
+frontend/node_modules/
+frontend/node_modules/.cache/
