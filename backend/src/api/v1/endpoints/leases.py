@@ -1,7 +1,7 @@
 """
 Green PM - Lease Management Endpoints (PostgreSQL)
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from typing import List, Optional
@@ -645,3 +645,361 @@ async def delete_lease(lease_id: str, db: AsyncSession = Depends(get_db)):
         logger.error(f"Error deleting lease {lease_id}: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete lease: {str(e)}")
+
+@router.post("/{lease_id}/renew")
+async def renew_lease(lease_id: str, renewal_data: dict, db: AsyncSession = Depends(get_db)):
+    """Renew an existing lease with new terms"""
+    try:
+        from sqlalchemy import text
+        from src.services.payment_service import PaymentService
+        
+        logger.info(f"Renewing lease {lease_id} with data: {renewal_data}")
+        
+        # Get the original lease
+        get_lease_query = text("""
+            SELECT 
+                l.id, l.property_id, l.tenant_id, l.start_date, l.end_date,
+                l.monthly_rent, l.security_deposit, l.late_fee, l.late_fee_grace_days,
+                l.status, l.created_at, l.updated_at,
+                p.title as property_title, p.address_line1, p.city,
+                u.first_name, u.last_name, u.email
+            FROM leases l
+            LEFT JOIN properties p ON l.property_id = p.id
+            LEFT JOIN users u ON l.tenant_id = u.id
+            WHERE l.id = :lease_id
+        """)
+        
+        result = await db.execute(get_lease_query, {"lease_id": int(lease_id)})
+        original_lease = result.fetchone()
+        
+        if not original_lease:
+            raise HTTPException(status_code=404, detail="Original lease not found")
+        
+        # Extract renewal data
+        new_start_date = datetime.fromisoformat(renewal_data.get("newStartDate")).date()
+        new_end_date = datetime.fromisoformat(renewal_data.get("newEndDate")).date()
+        new_monthly_rent = float(renewal_data.get("newMonthlyRent", original_lease.monthly_rent))
+        new_security_deposit = float(renewal_data.get("newSecurityDeposit", 0))  # Usually 0 for renewals
+        renewal_type = renewal_data.get("renewalType", "fixed")
+        notes = renewal_data.get("notes", "")
+        
+        # Create the renewed lease
+        create_query = text("""
+            INSERT INTO leases (
+                property_id, tenant_id, start_date, end_date, monthly_rent, 
+                security_deposit, late_fee, late_fee_grace_days, status, 
+                created_at, updated_at
+            ) VALUES (
+                :property_id, :tenant_id, :start_date, :end_date, :monthly_rent,
+                :security_deposit, :late_fee, :grace_days, 'active',
+                NOW(), NOW()
+            ) RETURNING id
+        """)
+        
+        renewal_params = {
+            "property_id": original_lease.property_id,
+            "tenant_id": original_lease.tenant_id,
+            "start_date": new_start_date,
+            "end_date": new_end_date,
+            "monthly_rent": new_monthly_rent,
+            "security_deposit": new_security_deposit,
+            "late_fee": original_lease.late_fee,
+            "grace_days": original_lease.late_fee_grace_days or 5
+        }
+        
+        result = await db.execute(create_query, renewal_params)
+        new_lease_id = result.fetchone()[0]
+        
+        # Update the original lease status to 'renewed'
+        update_original_query = text("""
+            UPDATE leases 
+            SET status = 'expired', 
+                updated_at = NOW()
+            WHERE id = :lease_id
+        """)
+        
+        await db.execute(update_original_query, {"lease_id": int(lease_id)})
+        await db.commit()
+        
+        # Generate payment schedule for the new lease
+        payment_service = PaymentService()
+        
+        # Create a lease object for the payment service
+        class RenewalLease:
+            def __init__(self):
+                self.id = str(new_lease_id)
+                self.start_date = new_start_date
+                self.end_date = new_end_date
+                self.rent_amount = new_monthly_rent
+                self.security_deposit = new_security_deposit
+                self.late_fee_penalty = original_lease.late_fee
+                self.grace_period_days = original_lease.late_fee_grace_days or 5
+        
+        renewal_lease_obj = RenewalLease()
+        payment_schedule = payment_service.generate_payment_schedule(renewal_lease_obj)
+        
+        # Get the new lease details for response
+        get_new_lease_query = text("""
+            SELECT 
+                l.id, l.property_id, l.tenant_id, l.start_date, l.end_date,
+                l.monthly_rent, l.security_deposit, l.late_fee, l.late_fee_grace_days,
+                l.status, l.created_at, l.updated_at,
+                p.title as property_title, p.address_line1, p.city,
+                u.first_name, u.last_name, u.email
+            FROM leases l
+            LEFT JOIN properties p ON l.property_id = p.id
+            LEFT JOIN users u ON l.tenant_id = u.id
+            WHERE l.id = :lease_id
+        """)
+        
+        result = await db.execute(get_new_lease_query, {"lease_id": new_lease_id})
+        new_lease = result.fetchone()
+        
+        # Build response
+        address_parts = []
+        if new_lease.address_line1:
+            address_parts.append(new_lease.address_line1)
+        if new_lease.city:
+            address_parts.append(new_lease.city)
+        property_address = ", ".join(address_parts) if address_parts else "Unknown Address"
+        
+        tenant_name = f"{new_lease.first_name or ''} {new_lease.last_name or ''}".strip()
+        if not tenant_name:
+            tenant_name = "Unknown Tenant"
+        
+        response = {
+            "id": str(new_lease.id),
+            "originalLeaseId": lease_id,
+            "propertyId": str(new_lease.property_id),
+            "property_id": str(new_lease.property_id),
+            "tenantId": str(new_lease.tenant_id),
+            "tenant_id": str(new_lease.tenant_id),
+            "startDate": new_lease.start_date.isoformat() if new_lease.start_date else "",
+            "start_date": new_lease.start_date.isoformat() if new_lease.start_date else "",
+            "endDate": new_lease.end_date.isoformat() if new_lease.end_date else "",
+            "end_date": new_lease.end_date.isoformat() if new_lease.end_date else "",
+            "monthlyRent": float(new_lease.monthly_rent or 0),
+            "monthly_rent": float(new_lease.monthly_rent or 0),
+            "rent_amount": float(new_lease.monthly_rent or 0),
+            "securityDeposit": float(new_lease.security_deposit or 0),
+            "security_deposit": float(new_lease.security_deposit or 0),
+            "lateFeePenalty": float(new_lease.late_fee or 0),
+            "late_fee_penalty": float(new_lease.late_fee or 0),
+            "gracePeriodDays": int(new_lease.late_fee_grace_days or 5),
+            "grace_period_days": int(new_lease.late_fee_grace_days or 5),
+            "status": new_lease.status,
+            "propertyTitle": new_lease.property_title or "Unknown Property",
+            "property_title": new_lease.property_title or "Unknown Property",
+            "property_name": new_lease.property_title or "Unknown Property",
+            "propertyAddress": property_address,
+            "property_address": property_address,
+            "tenantName": tenant_name,
+            "tenant_name": tenant_name,
+            "tenantEmail": new_lease.email or "unknown@example.com",
+            "tenant_email": new_lease.email or "unknown@example.com",
+            "created_at": new_lease.created_at.isoformat() if new_lease.created_at else "",
+            "updated_at": new_lease.updated_at.isoformat() if new_lease.updated_at else "",
+            "renewalType": renewal_type,
+            "notes": f"Renewed from lease {lease_id}. {notes}",
+            "paymentSchedule": payment_schedule
+        }
+        
+        logger.info(f"Successfully renewed lease {lease_id} -> {new_lease_id}")
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error renewing lease {lease_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to renew lease: {str(e)}")
+
+@router.post("/{lease_id}/documents")
+async def upload_lease_documents(
+    lease_id: str, 
+    documents: List[UploadFile],
+    db: AsyncSession = Depends(get_db)
+):
+    """Upload documents for a lease"""
+    try:
+        from fastapi import File, UploadFile, Form
+        from src.services.storage_service import StorageService
+        
+        logger.info(f"Uploading documents for lease {lease_id}")
+        
+        if not documents:
+            raise HTTPException(status_code=400, detail="No documents provided")
+        
+        # Check if lease exists
+        check_lease_query = text("SELECT id FROM leases WHERE id = :lease_id")
+        result = await db.execute(check_lease_query, {"lease_id": int(lease_id)})
+        lease_row = result.fetchone()
+        
+        if not lease_row:
+            raise HTTPException(status_code=404, detail="Lease not found")
+        
+        storage_service = StorageService()
+        uploaded_urls = []
+        
+        # Upload each document to the DOCUMENTS_BUCKET
+        for document in documents:
+            if not isinstance(document, UploadFile):
+                continue
+                
+            # Define the storage path for lease documents
+            storage_path = f"leases/{lease_id}/documents"
+            
+            try:
+                document_url = await storage_service.upload_document(
+                    file=document,
+                    path=storage_path,
+                    user_id=lease_id,  # Using lease_id as user context
+                    bucket_type="documents"  # Use documents bucket
+                )
+                uploaded_urls.append({
+                    "filename": document.filename,
+                    "url": document_url,
+                    "type": "lease_document"
+                })
+                
+            except Exception as upload_error:
+                logger.error(f"Failed to upload document {document.filename}: {upload_error}")
+                # Continue with other documents
+                continue
+        
+        if not uploaded_urls:
+            raise HTTPException(status_code=500, detail="Failed to upload any documents")
+        
+        # Store document references in database (optional)
+        # You might want to create a documents table to track uploads
+        
+        logger.info(f"Successfully uploaded {len(uploaded_urls)} documents for lease {lease_id}")
+        return {
+            "message": f"Successfully uploaded {len(uploaded_urls)} documents",
+            "lease_id": lease_id,
+            "documents": uploaded_urls
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading documents for lease {lease_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to upload documents: {str(e)}")
+
+@router.get("/{lease_id}/documents")
+async def get_lease_documents(lease_id: str, db: AsyncSession = Depends(get_db)):
+    """Get signed URLs for lease documents"""
+    try:
+        from src.services.storage_service import StorageService
+        
+        logger.info(f"Getting documents for lease {lease_id}")
+        
+        # Check if lease exists
+        check_lease_query = text("SELECT id FROM leases WHERE id = :lease_id")
+        result = await db.execute(check_lease_query, {"lease_id": int(lease_id)})
+        lease_row = result.fetchone()
+        
+        if not lease_row:
+            raise HTTPException(status_code=404, detail="Lease not found")
+        
+        storage_service = StorageService()
+        
+        # In a real implementation, you'd query a documents table
+        # For now, we'll return the structure that would be expected
+        documents = []
+        
+        # Generate signed URLs for accessing documents
+        # This is a placeholder - you'd typically get document paths from your database
+        storage_path = f"leases/{lease_id}/documents"
+        
+        return {
+            "lease_id": lease_id,
+            "documents": documents,
+            "upload_info": {
+                "bucket": "documents",
+                "path": storage_path,
+                "supported_formats": ["pdf", "doc", "docx", "txt", "jpg", "jpeg", "png"]
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting documents for lease {lease_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get documents: {str(e)}")
+
+@router.delete("/{lease_id}/documents")
+async def delete_lease_document(lease_id: str, document_data: dict, db: AsyncSession = Depends(get_db)):
+    """Delete a lease document"""
+    try:
+        from src.services.storage_service import StorageService
+        
+        logger.info(f"Deleting document for lease {lease_id}: {document_data}")
+        
+        # Check if lease exists
+        check_lease_query = text("SELECT id FROM leases WHERE id = :lease_id")
+        result = await db.execute(check_lease_query, {"lease_id": int(lease_id)})
+        lease_row = result.fetchone()
+        
+        if not lease_row:
+            raise HTTPException(status_code=404, detail="Lease not found")
+        
+        document_url = document_data.get("documentUrl")
+        if not document_url:
+            raise HTTPException(status_code=400, detail="Document URL is required")
+        
+        storage_service = StorageService()
+        success = await storage_service.delete_document(document_url)
+        
+        if not success:
+            raise HTTPException(status_code=404, detail="Document not found or could not be deleted")
+        
+        logger.info(f"Successfully deleted document for lease {lease_id}")
+        return {"message": "Document deleted successfully", "lease_id": lease_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting document for lease {lease_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete document: {str(e)}")
+
+@router.get("/{lease_id}/documents/{document_id}/signed-url")
+async def get_document_signed_url(lease_id: str, document_id: str, db: AsyncSession = Depends(get_db)):
+    """Get a signed URL for accessing a specific document"""
+    try:
+        from src.services.storage_service import StorageService
+        
+        logger.info(f"Getting signed URL for document {document_id} in lease {lease_id}")
+        
+        # Check if lease exists
+        check_lease_query = text("SELECT id FROM leases WHERE id = :lease_id")
+        result = await db.execute(check_lease_query, {"lease_id": int(lease_id)})
+        lease_row = result.fetchone()
+        
+        if not lease_row:
+            raise HTTPException(status_code=404, detail="Lease not found")
+        
+        storage_service = StorageService()
+        blob_name = f"leases/{lease_id}/documents/{document_id}"
+        
+        signed_url = storage_service.get_signed_url(blob_name, expiration_minutes=60)
+        
+        if not signed_url:
+            raise HTTPException(status_code=404, detail="Document not found or could not generate signed URL")
+        
+        return {
+            "lease_id": lease_id,
+            "document_id": document_id,
+            "signed_url": signed_url,
+            "expires_in_minutes": 60
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting signed URL for document {document_id} in lease {lease_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get signed URL: {str(e)}")

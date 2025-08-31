@@ -142,57 +142,35 @@ const Leases: React.FC = () => {
     try {
       if (!renewingLease) return;
       
-      // Create a new lease based on renewal data
-      const newLeaseData: CreateLeaseRequest = {
-        propertyId: renewingLease.property_id || renewingLease.propertyId || '',
-        tenantId: renewingLease.tenant_id || renewingLease.tenantId || '',
-        startDate: data.newStartDate,
-        endDate: data.newEndDate,
-        monthlyRent: data.newMonthlyRent,
-        securityDeposit: data.newSecurityDeposit,
-        leaseType: data.renewalType,
-        lateFeePenalty: renewingLease.late_fee_penalty || renewingLease.lateFeePenalty || 0,
-        gracePeriodDays: 5, // Default grace period
-        renewalOption: true,
-        petPolicy: {
-          allowed: false,
-          deposit: 0,
-          monthlyFee: 0,
-          restrictions: ''
-        },
-        utilitiesIncluded: [],
-        tenantResponsibilities: ['Regular cleaning', 'Minor maintenance'],
-        landlordResponsibilities: ['Major repairs', 'Property maintenance'],
-        specialTerms: data.notes,
-        notes: `Renewed lease from ${renewingLease.id} on ${new Date().toLocaleDateString()}`
+      console.log('🔄 Renewing lease with data:', data);
+      
+      // Use the backend renewal endpoint
+      const renewalData = {
+        newStartDate: data.newStartDate,
+        newEndDate: data.newEndDate,
+        newMonthlyRent: data.newMonthlyRent,
+        newSecurityDeposit: data.newSecurityDeposit || 0,
+        renewalType: data.renewalType || 'fixed',
+        notes: data.notes || '',
+        rentIncrease: data.newMonthlyRent - (renewingLease.monthlyRent || renewingLease.rent_amount || 0),
+        renewalTerms: `Lease renewed for ${data.renewalType} term. ${data.notes || ''}`,
+        status: 'approved' as const
       };
 
-      // Create the new lease
-      await leaseService.createLease(newLeaseData);
+      const renewedLease = await leaseService.renewLease(renewingLease.id, renewalData);
       
-      // Update the old lease status to 'renewed'
-      if (renewingLease.id) {
-        try {
-          await leaseService.updateLease({ 
-            id: renewingLease.id,
-            status: 'expired',
-            notes: `Renewed on ${new Date().toLocaleDateString()}. ${data.notes || ''}`
-          });
-        } catch (updateError) {
-          console.warn('Could not update old lease status:', updateError);
-          // Don't throw - the new lease was created successfully
-        }
-      }
-      
+      console.log('✅ Lease renewed successfully:', renewedLease);
       toast.success('Lease renewal created successfully!');
+      
       // Refresh leases to show the new one
       fetchLeases();
+      
       // Close the modal
       setIsRenewalModalOpen(false);
       setRenewingLease(undefined);
     } catch (error) {
-      console.error('Error creating lease renewal:', error);
-      toast.error('Failed to create lease renewal');
+      console.error('❌ Error renewing lease:', error);
+      toast.error('Failed to renew lease');
       throw error;
     }
   };
@@ -631,6 +609,14 @@ const Leases: React.FC = () => {
               onView={handleViewLease}
               onRenew={handleRenewLease}
               onTerminate={handleTerminateLease}
+              onViewProperty={(propertyId) => {
+                console.log('Navigate to property:', propertyId);
+                navigate('/dashboard/properties/' + propertyId);
+              }}
+              onViewTenant={(tenantId) => {
+                console.log('Navigate to tenant:', tenantId);
+                navigate('/dashboard/tenants/' + tenantId);
+              }}
             />
           ))}
         </div>
@@ -650,13 +636,11 @@ const Leases: React.FC = () => {
           onTerminate={handleTerminateLease}
           onViewProperty={(propertyId) => {
             console.log('Navigate to property:', propertyId);
-            // TODO: Navigate to property details
-            toast('Property navigation will be implemented soon!');
+            navigate('/dashboard/properties/' + propertyId);
           }}
           onViewTenant={(tenantId) => {
             console.log('Navigate to tenant:', tenantId);
-            // TODO: Navigate to tenant details
-            toast('Tenant navigation will be implemented soon!');
+            navigate('/dashboard/tenants/' + tenantId);
           }}
         />
       )}

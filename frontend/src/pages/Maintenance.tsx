@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { MaintenanceService } from '../services/api';
+import { maintenanceService, MaintenanceRequest, MaintenanceStats } from '../services/maintenanceService';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
@@ -9,40 +9,84 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
-  CogIcon
+  CogIcon,
+  ChatBubbleLeftIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 const Maintenance: React.FC = () => {
   const { user } = useAuth();
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
+  const [stats, setStats] = useState<MaintenanceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     status: '',
     priority: '',
-    category: '',
-    emergency_only: false
+    property_id: ''
   });
+  const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [requestHistory, setRequestHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchMaintenanceRequests();
+    fetchData();
   }, [filters]);
 
-  const fetchMaintenanceRequests = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const params = {
-        ...filters,
-        skip: 0,
-        limit: 50
-      };
-      const data = await MaintenanceService.getMaintenanceRequests(params);
-      setRequests(data.requests);
+      const [requestsData, statsData] = await Promise.all([
+        maintenanceService.getMaintenanceRequests(filters),
+        maintenanceService.getMaintenanceStats()
+      ]);
+      setRequests(requestsData);
+      setStats(statsData);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch maintenance requests');
+      setError(err.message || 'Failed to fetch maintenance data');
+      toast.error('Failed to load maintenance data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (request: MaintenanceRequest, newStatus: string, notes?: string) => {
+    try {
+      await maintenanceService.updateMaintenanceStatus(request.id, newStatus as any, notes);
+      toast.success('Status updated successfully');
+      setShowStatusModal(false);
+      fetchData(); // Refresh data
+    } catch (error: any) {
+      toast.error('Failed to update status');
+      console.error('Status update error:', error);
+    }
+  };
+
+  const handleViewHistory = async (request: MaintenanceRequest) => {
+    try {
+      const history = await maintenanceService.getMaintenanceHistory(request.id);
+      setRequestHistory(history.history);
+      setSelectedRequest(request);
+      setShowHistoryModal(true);
+    } catch (error: any) {
+      toast.error('Failed to load request history');
+      console.error('History load error:', error);
+    }
+  };
+
+  const handleAddComment = async (requestId: string, comment: string) => {
+    try {
+      await maintenanceService.addMaintenanceComment(requestId, comment);
+      toast.success('Comment added successfully');
+      if (showHistoryModal && selectedRequest) {
+        handleViewHistory(selectedRequest); // Refresh history
+      }
+    } catch (error: any) {
+      toast.error('Failed to add comment');
+      console.error('Comment add error:', error);
     }
   };
 
@@ -51,16 +95,18 @@ const Maintenance: React.FC = () => {
     if (!resolution) return;
 
     try {
-      await MaintenanceService.closeMaintenanceRequest(id, resolution);
-      fetchMaintenanceRequests();
+      await maintenanceService.updateMaintenanceStatus(id, 'completed', resolution);
+      toast.success('Request closed successfully');
+      fetchData();
     } catch (err: any) {
-      setError(err.message || 'Failed to close maintenance request');
+      toast.error('Failed to close maintenance request');
+      console.error('Close request error:', err);
     }
   };
 
   const filteredRequests = requests.filter(request =>
     request.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    request.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (request.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -104,6 +150,41 @@ const Maintenance: React.FC = () => {
           </Link>
         )}
       </div>
+
+      {/* Statistics Dashboard */}
+      {stats && (
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Request Overview</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">{stats.total_requests}</div>
+                <div className="text-sm text-gray-500">Total</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{stats.open_requests}</div>
+                <div className="text-sm text-gray-500">Open</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">{stats.in_progress_requests}</div>
+                <div className="text-sm text-gray-500">In Progress</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{stats.completed_requests}</div>
+                <div className="text-sm text-gray-500">Completed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">{stats.high_priority}</div>
+                <div className="text-sm text-gray-500">High Priority</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">{stats.urgent_priority}</div>
+                <div className="text-sm text-gray-500">Urgent</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="bg-white shadow rounded-lg">
@@ -160,34 +241,15 @@ const Maintenance: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <label className="block text-sm font-medium text-gray-700">Property</label>
                 <select
-                  value={filters.category}
-                  onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                  value={filters.property_id}
+                  onChange={(e) => setFilters(prev => ({ ...prev, property_id: e.target.value }))}
                   className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md"
                 >
-                  <option value="">All Categories</option>
-                  <option value="plumbing">Plumbing</option>
-                  <option value="electrical">Electrical</option>
-                  <option value="hvac">HVAC</option>
-                  <option value="appliances">Appliances</option>
-                  <option value="flooring">Flooring</option>
-                  <option value="painting">Painting</option>
-                  <option value="other">Other</option>
+                  <option value="">All Properties</option>
+                  {/* Property options would be populated dynamically */}
                 </select>
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="emergency-only"
-                  checked={filters.emergency_only}
-                  onChange={(e) => setFilters(prev => ({ ...prev, emergency_only: e.target.checked }))}
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor="emergency-only" className="ml-2 block text-sm text-gray-900">
-                  Emergency Only
-                </label>
               </div>
             </div>
           </div>
@@ -203,6 +265,8 @@ const Maintenance: React.FC = () => {
               request={request}
               userRole={user?.role}
               onClose={handleCloseRequest}
+              onStatusUpdate={handleStatusUpdate}
+              onViewHistory={handleViewHistory}
             />
           ))}
         </ul>
@@ -230,15 +294,102 @@ const Maintenance: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* History Modal */}
+      {showHistoryModal && selectedRequest && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Request History: {selectedRequest.title}
+                </h3>
+                <button
+                  onClick={() => setShowHistoryModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="max-h-96 overflow-y-auto">
+                {requestHistory.length > 0 ? (
+                  <div className="space-y-4">
+                    {requestHistory.map((entry, index) => (
+                      <div key={index} className="border-l-2 border-gray-200 pl-4 pb-4">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium text-gray-900">
+                            {entry.action === 'status_change' ? 'Status Changed' : 
+                             entry.action === 'comment' ? 'Comment Added' : entry.action}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(entry.created_at).toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600 mt-1">
+                          By: {entry.user_name} ({entry.role})
+                        </div>
+                        {entry.old_value && entry.new_value && (
+                          <div className="text-sm text-gray-600 mt-1">
+                            Changed from: <span className="font-medium">{entry.old_value}</span> to <span className="font-medium">{entry.new_value}</span>
+                          </div>
+                        )}
+                        {entry.notes && (
+                          <div className="text-sm text-gray-700 mt-2 bg-gray-50 p-2 rounded">
+                            {entry.notes}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">No history available</div>
+                )}
+              </div>
+              
+              {/* Add Comment Section */}
+              <div className="mt-4 border-t pt-4">
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                        handleAddComment(selectedRequest.id, e.currentTarget.value.trim());
+                        e.currentTarget.value = '';
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={(e) => {
+                      const input = e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement;
+                      if (input?.value.trim()) {
+                        handleAddComment(selectedRequest.id, input.value.trim());
+                        input.value = '';
+                      }
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                  >
+                    <ChatBubbleLeftIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 const MaintenanceRequestItem: React.FC<{
-  request: any;
+  request: MaintenanceRequest;
   userRole?: string;
   onClose: (id: string) => void;
-}> = ({ request, userRole, onClose }) => {
+  onStatusUpdate?: (request: MaintenanceRequest, status: string, notes?: string) => void;
+  onViewHistory?: (request: MaintenanceRequest) => void;
+}> = ({ request, userRole, onClose, onStatusUpdate, onViewHistory }) => {
   const statusIcons = {
     open: ClockIcon,
     in_progress: CogIcon,
@@ -268,7 +419,7 @@ const MaintenanceRequestItem: React.FC<{
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              {request.is_emergency ? (
+              {request.priority === 'urgent' ? (
                 <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />
               ) : (
                 <StatusIcon className="h-6 w-6 text-gray-400" />
@@ -279,9 +430,9 @@ const MaintenanceRequestItem: React.FC<{
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {request.title}
                 </p>
-                {request.is_emergency && (
+                {request.priority === 'urgent' && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    Emergency
+                    Urgent
                   </span>
                 )}
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[request.status as keyof typeof statusColors]}`}>
@@ -293,28 +444,43 @@ const MaintenanceRequestItem: React.FC<{
               </div>
               <div className="mt-2 flex items-center text-sm text-gray-500">
                 <p className="truncate">
-                  {request.category} • {request.property?.name || 'Property'}
+                  {request.property_name || 'Property'} • Created {new Date(request.created_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
           </div>
           
           <div className="flex items-center space-x-2">
-            <Link
-              to={`/maintenance/${request.id}`}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            >
-              View Details
-            </Link>
-            
-            {userRole === 'landlord' && request.status === 'completed' && (
+            {onViewHistory && (
               <button
-                onClick={() => onClose(request.id)}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                onClick={() => onViewHistory(request)}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
               >
-                <CheckCircleIcon className="h-4 w-4 mr-1" />
-                Close
+                <DocumentTextIcon className="h-4 w-4 mr-1" />
+                History
               </button>
+            )}
+            
+            {userRole === 'landlord' && onStatusUpdate && (
+              <div className="relative inline-block text-left">
+                <select
+                  value={request.status}
+                  onChange={(e) => {
+                    const notes = e.target.value !== request.status ? 
+                      prompt(`Update status to ${e.target.value}. Add notes (optional):`) || undefined : 
+                      undefined;
+                    if (e.target.value !== request.status) {
+                      onStatusUpdate(request, e.target.value, notes);
+                    }
+                  }}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
             )}
           </div>
         </div>
@@ -330,18 +496,18 @@ const MaintenanceRequestItem: React.FC<{
             <p className="flex items-center text-sm text-gray-500">
               Created: {new Date(request.created_at).toLocaleDateString()}
             </p>
-            {request.location && (
+            {request.property_address && (
               <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                Location: {request.location}
+                Property: {request.property_address}
               </p>
             )}
           </div>
           <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-            {request.estimated_cost && (
-              <p>
-                Estimated Cost: ${request.estimated_cost}
-              </p>
-            )}
+            <p>
+              Priority: <span className={`px-2 py-1 rounded-full text-xs font-medium ${maintenanceService.getPriorityColor(request.priority)}`}>
+                {request.priority}
+              </span>
+            </p>
           </div>
         </div>
       </div>

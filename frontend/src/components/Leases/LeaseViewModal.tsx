@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Lease } from '../../types/lease';
+import { leaseService } from '../../services/leaseService';
 import Modal from '../Common/Modal';
 import {
   CalendarIcon,
@@ -10,7 +11,11 @@ import {
   TagIcon,
   PhoneIcon,
   EnvelopeIcon,
+  DocumentIcon,
+  ArrowUpTrayIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 interface LeaseViewModalProps {
   isOpen: boolean;
@@ -33,9 +38,50 @@ const LeaseViewModal: React.FC<LeaseViewModalProps> = ({
   onViewProperty,
   onViewTenant
 }) => {
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [uploadingDocuments, setUploadingDocuments] = useState(false);
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleDocumentUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setUploadingDocuments(true);
+    try {
+      const fileArray = Array.from(files);
+      const uploadedDocuments = await leaseService.uploadDocuments(lease.id, fileArray);
+      
+      toast.success(`Successfully uploaded ${fileArray.length} document(s)`);
+      
+      // Add uploaded documents to state
+      setDocuments(prev => [...prev, ...uploadedDocuments.map((url: string, index: number) => ({
+        id: Date.now() + index,
+        filename: fileArray[index].name,
+        url,
+        uploadedAt: new Date().toISOString()
+      }))]);
+    } catch (error) {
+      console.error('Error uploading documents:', error);
+      toast.error('Failed to upload documents');
+    } finally {
+      setUploadingDocuments(false);
+    }
+  };
+
+  const handleDocumentDelete = async (documentUrl: string) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+
+    try {
+      await leaseService.deleteDocument(lease.id, documentUrl);
+      setDocuments(prev => prev.filter(doc => doc.url !== documentUrl));
+      toast.success('Document deleted successfully');
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast.error('Failed to delete document');
+    }
   };
 
   const rentAmount = lease.monthlyRent || lease.rent_amount || 0;
@@ -262,6 +308,85 @@ const LeaseViewModal: React.FC<LeaseViewModalProps> = ({
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Documents Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+            Lease Documents
+          </h3>
+
+          {/* Document Upload */}
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+            <div className="text-center">
+              <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <div className="mt-4">
+                <label
+                  htmlFor="document-upload"
+                  className="cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                >
+                  <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
+                    {uploadingDocuments ? 'Uploading...' : 'Upload Documents'}
+                  </span>
+                  <input
+                    id="document-upload"
+                    name="document-upload"
+                    type="file"
+                    className="sr-only"
+                    multiple
+                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                    onChange={(e) => handleDocumentUpload(e.target.files)}
+                    disabled={uploadingDocuments}
+                  />
+                </label>
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                PDF, DOC, DOCX, TXT, JPG, JPEG, PNG up to 10MB each
+              </p>
+            </div>
+          </div>
+
+          {/* Document List */}
+          {documents.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-gray-700">Uploaded Documents</h4>
+              <div className="space-y-2">
+                {documents.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex items-center">
+                      <DocumentIcon className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{doc.filename}</p>
+                        <p className="text-xs text-gray-500">
+                          Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        View
+                      </a>
+                      <button
+                        onClick={() => handleDocumentDelete(doc.url)}
+                        className="text-sm text-red-600 hover:text-red-800 font-medium"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}

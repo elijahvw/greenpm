@@ -292,3 +292,84 @@ class NotificationService:
         
         template = templates.get(template_name, "")
         return template.format(**context)
+
+    async def send_maintenance_status_update(
+        self,
+        tenant_email: str,
+        tenant_name: str,
+        property_name: str,
+        request_title: str,
+        old_status: str,
+        new_status: str,
+        notes: Optional[str] = None
+    ) -> bool:
+        """Send notification when maintenance status is updated"""
+        context = {
+            "tenant_name": tenant_name,
+            "property_name": property_name,
+            "request_title": request_title,
+            "old_status": old_status.replace('_', ' ').title(),
+            "new_status": new_status.replace('_', ' ').title(),
+            "notes": notes or "",
+            "status_message": self._get_status_message(new_status),
+            "app_name": settings.APP_NAME
+        }
+        
+        subject = f"Maintenance Update: {request_title}"
+        
+        # Use simple HTML content if template doesn't exist
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #2563eb;">Maintenance Request Update</h2>
+                
+                <p>Hi {tenant_name},</p>
+                
+                <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="margin: 0 0 10px 0;">Request Details</h3>
+                    <p><strong>Property:</strong> {property_name}</p>
+                    <p><strong>Request:</strong> {request_title}</p>
+                    <p><strong>Status Changed:</strong> {old_status.replace('_', ' ').title()} → {new_status.replace('_', ' ').title()}</p>
+                </div>
+                
+                <div style="background-color: #{'ecfdf5' if new_status == 'completed' else 'fef3c7' if new_status == 'in_progress' else 'fef2f2'}; 
+                           padding: 15px; border-radius: 8px; border-left: 4px solid #{'10b981' if new_status == 'completed' else 'f59e0b' if new_status == 'in_progress' else 'ef4444'};">
+                    <p style="margin: 0;"><strong>{self._get_status_message(new_status)}</strong></p>
+                    {f'<p style="margin: 10px 0 0 0;"><em>Notes: {notes}</em></p>' if notes else ''}
+                </div>
+                
+                <p style="margin-top: 20px;">Best regards,<br>Green PM Team</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        text_content = f"""
+        Hi {tenant_name},
+        
+        Your maintenance request has been updated:
+        
+        Property: {property_name}
+        Request: {request_title}
+        Status: {old_status.replace('_', ' ').title()} → {new_status.replace('_', ' ').title()}
+        
+        {self._get_status_message(new_status)}
+        
+        {f'Notes: {notes}' if notes else ''}
+        
+        Best regards,
+        Green PM Team
+        """
+        
+        return await self.send_email(tenant_email, subject, html_content, text_content)
+    
+    def _get_status_message(self, status: str) -> str:
+        """Get friendly status message"""
+        messages = {
+            'open': 'Your maintenance request has been received and is awaiting review.',
+            'in_progress': 'Work has begun on your maintenance request.',
+            'completed': 'Your maintenance request has been completed!',
+            'cancelled': 'Your maintenance request has been cancelled.'
+        }
+        return messages.get(status, f'Status updated to {status.replace("_", " ").title()}')

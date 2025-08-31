@@ -19,6 +19,8 @@ interface LeaseCardProps {
   onView: (lease: Lease) => void;
   onRenew?: (lease: Lease) => void;
   onTerminate?: (lease: Lease) => void;
+  onViewProperty?: (propertyId: string) => void;
+  onViewTenant?: (tenantId: string) => void;
 }
 
 const LeaseCard: React.FC<LeaseCardProps> = ({ 
@@ -27,7 +29,9 @@ const LeaseCard: React.FC<LeaseCardProps> = ({
   onDelete, 
   onView,
   onRenew,
-  onTerminate
+  onTerminate,
+  onViewProperty,
+  onViewTenant
 }) => {
 
   const getStatusColor = (status: string) => {
@@ -156,12 +160,30 @@ const LeaseCard: React.FC<LeaseCardProps> = ({
         <div className="mt-4 space-y-2">
           <div className="flex items-center text-sm text-gray-600">
             <HomeIcon className="h-4 w-4 mr-2" />
-            <span className="font-medium">{getPropertyName()}</span>
+            {onViewProperty && (lease.propertyId || lease.property_id) ? (
+              <button
+                onClick={() => onViewProperty(lease.propertyId || lease.property_id || '')}
+                className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+              >
+                {getPropertyName()}
+              </button>
+            ) : (
+              <span className="font-medium">{getPropertyName()}</span>
+            )}
           </div>
           
           <div className="flex items-center text-sm text-gray-600">
             <UserIcon className="h-4 w-4 mr-2" />
-            <span>{getTenantName()}</span>
+            {onViewTenant && (lease.tenantId || lease.tenant_id) ? (
+              <button
+                onClick={() => onViewTenant(lease.tenantId || lease.tenant_id || '')}
+                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+              >
+                {getTenantName()}
+              </button>
+            ) : (
+              <span>{getTenantName()}</span>
+            )}
           </div>
         </div>
 

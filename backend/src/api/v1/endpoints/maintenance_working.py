@@ -10,7 +10,7 @@ from datetime import datetime
 from src.core.database_simple import db
 from src.api.v1.endpoints.auth_working import get_current_user, require_admin
 
-router = APIRouter(prefix="/maintenance", tags=["maintenance"])
+router = APIRouter(tags=["maintenance"])
 
 # Pydantic Models
 class MaintenanceBase(BaseModel):
@@ -330,4 +330,136 @@ async def get_maintenance_stats(current_user: Dict[str, Any] = Depends(get_curre
         "completed_requests": completed_requests,
         "high_priority": high_priority,
         "urgent_priority": urgent_priority
+    }
+
+@router.post("/{request_id}/status")
+async def update_maintenance_status(
+    request_id: str,
+    status: str,
+    notes: Optional[str] = None,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Update maintenance request status with notification"""
+    from src.services.notification_service import NotificationService
+    
+    # Validate status
+    valid_statuses = ['open', 'in_progress', 'completed', 'cancelled']
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    # Get existing request
+    requests = db.execute_query("""
+        SELECT m.*, p.name as property_name, p.address as property_address,
+               u.first_name || ' ' || u.last_name as tenant_name, u.email as tenant_email
+        FROM maintenance_requests m
+        JOIN properties p ON m.property_id = p.id  
+        JOIN users u ON m.tenant_id = u.id
+        WHERE m.id = ?
+    """, (request_id,))
+    
+    if not requests:
+        raise HTTPException(status_code=404, detail="Maintenance request not found")
+    
+    request_dict = requests[0]
+    old_status = request_dict['status']
+    
+    # Check permissions - only landlords and admins can update status
+    if current_user['role'] == 'tenant':
+        raise HTTPException(status_code=403, detail="Only landlords can update status")
+    elif current_user['role'] == 'landlord':
+        # Check if landlord owns the property
+        properties = db.execute_query(
+            "SELECT * FROM properties WHERE id = ? AND owner_id = ?",
+            (request_dict['property_id'], current_user['id'])
+        )
+        if not properties:
+            raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Update status
+    db.execute_update("""
+        UPDATE maintenance_requests 
+        SET status = ?, updated_at = ?
+        WHERE id = ?
+    """, (status, datetime.utcnow().isoformat(), request_id))
+    
+    # Log status change
+    log_id = str(uuid.uuid4())
+    db.execute_update("""
+        INSERT INTO maintenance_logs (id, request_id, user_id, action, old_value, new_value, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        log_id, request_id, current_user['id'], 'status_change',
+        old_status, status, notes or '', datetime.utcnow().isoformat()
+    ))
+    
+    # Send notification to tenant
+    notification_service = NotificationService()
+    try:
+        await notification_service.send_maintenance_status_update(
+            tenant_email=request_dict['tenant_email'],
+            tenant_name=request_dict['tenant_name'],
+            property_name=request_dict['property_name'],
+            request_title=request_dict['title'],
+            old_status=old_status,
+            new_status=status,
+            notes=notes
+        )
+    except Exception as e:
+        print(f"Failed to send notification: {e}")
+        # Don't fail the status update if notification fails
+    
+    return {
+        "message": "Status updated successfully",
+        "request_id": request_id,
+        "old_status": old_status,
+        "new_status": status,
+        "notification_sent": True
+    }
+
+@router.get("/{request_id}/history")
+async def get_maintenance_history(
+    request_id: str,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Get maintenance request history"""
+    # Check if user has access to this request
+    await get_maintenance_request(request_id, current_user)
+    
+    # Get history logs
+    logs = db.execute_query("""
+        SELECT l.*, u.first_name || ' ' || u.last_name as user_name, u.role
+        FROM maintenance_logs l
+        JOIN users u ON l.user_id = u.id
+        WHERE l.request_id = ?
+        ORDER BY l.created_at DESC
+    """, (request_id,))
+    
+    return {
+        "request_id": request_id,
+        "history": logs
+    }
+
+@router.post("/{request_id}/comments")
+async def add_maintenance_comment(
+    request_id: str,
+    comment: str,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Add comment to maintenance request"""
+    # Check if user has access to this request
+    await get_maintenance_request(request_id, current_user)
+    
+    # Add comment log
+    log_id = str(uuid.uuid4())
+    db.execute_update("""
+        INSERT INTO maintenance_logs (id, request_id, user_id, action, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        log_id, request_id, current_user['id'], 'comment',
+        comment, datetime.utcnow().isoformat()
+    ))
+    
+    return {
+        "message": "Comment added successfully",
+        "comment_id": log_id
     }

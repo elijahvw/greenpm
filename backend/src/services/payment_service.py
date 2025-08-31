@@ -74,24 +74,121 @@ class PaymentService:
         }
     
     def generate_payment_schedule(self, lease: Lease) -> List[Dict[str, Any]]:
-        """Generate payment schedule for a lease"""
-        # TODO: Implement payment schedule generation
+        """Generate comprehensive payment schedule for a lease"""
         schedule = []
-        if lease.start_date and lease.end_date and lease.rent_amount:
-            current_date = datetime.fromisoformat(lease.start_date.replace('Z', '+00:00'))
-            end_date = datetime.fromisoformat(lease.end_date.replace('Z', '+00:00'))
+        
+        if not (lease.start_date and lease.end_date and lease.rent_amount):
+            return schedule
             
+        try:
+            # Handle different date formats
+            if isinstance(lease.start_date, str):
+                start_date = datetime.fromisoformat(lease.start_date.replace('Z', '+00:00'))
+            else:
+                start_date = lease.start_date
+                
+            if isinstance(lease.end_date, str):
+                end_date = datetime.fromisoformat(lease.end_date.replace('Z', '+00:00'))
+            else:
+                end_date = lease.end_date
+            
+            current_date = start_date.replace(day=1)  # Start from first day of month
+            
+            # Generate monthly rent payments
             while current_date <= end_date:
-                schedule.append({
-                    "due_date": current_date.isoformat(),
-                    "amount": lease.rent_amount,
+                # Calculate due date (typically first of the month)
+                due_date = current_date
+                
+                # Create payment entry
+                payment_entry = {
+                    "lease_id": lease.id,
+                    "due_date": due_date.isoformat(),
+                    "amount": float(lease.rent_amount),
                     "type": "rent",
-                    "status": "scheduled"
-                })
+                    "status": "scheduled",
+                    "description": f"Monthly rent for {due_date.strftime('%B %Y')}",
+                    "late_fee_amount": float(lease.late_fee_penalty) if lease.late_fee_penalty else 0,
+                    "grace_period_days": lease.grace_period_days if hasattr(lease, 'grace_period_days') else 5
+                }
+                
+                # Add late fee information if applicable
+                if lease.late_fee_penalty and lease.late_fee_penalty > 0:
+                    grace_period = lease.grace_period_days if hasattr(lease, 'grace_period_days') else 5
+                    late_fee_date = due_date + timedelta(days=grace_period + 1)
+                    payment_entry["late_fee_date"] = late_fee_date.isoformat()
+                
+                schedule.append(payment_entry)
+                
                 # Move to next month
                 if current_date.month == 12:
                     current_date = current_date.replace(year=current_date.year + 1, month=1)
                 else:
                     current_date = current_date.replace(month=current_date.month + 1)
+            
+            # Add security deposit entry if applicable
+            if lease.security_deposit and lease.security_deposit > 0:
+                security_deposit_entry = {
+                    "lease_id": lease.id,
+                    "due_date": start_date.isoformat(),
+                    "amount": float(lease.security_deposit),
+                    "type": "security_deposit",
+                    "status": "scheduled",
+                    "description": "Security deposit payment",
+                    "one_time": True
+                }
+                schedule.insert(0, security_deposit_entry)  # Add at beginning
+            
+            # Add pet deposit if applicable
+            if hasattr(lease, 'pet_policy') and lease.pet_policy and lease.pet_policy.get('deposit', 0) > 0:
+                pet_deposit_entry = {
+                    "lease_id": lease.id,
+                    "due_date": start_date.isoformat(),
+                    "amount": float(lease.pet_policy['deposit']),
+                    "type": "pet_deposit",
+                    "status": "scheduled",
+                    "description": "Pet deposit payment",
+                    "one_time": True
+                }
+                schedule.insert(-1, pet_deposit_entry)  # Add before regular rent payments
+            
+            # Add monthly pet fees if applicable
+            if hasattr(lease, 'pet_policy') and lease.pet_policy and lease.pet_policy.get('monthlyFee', 0) > 0:
+                current_date = start_date.replace(day=1)
+                while current_date <= end_date:
+                    pet_fee_entry = {
+                        "lease_id": lease.id,
+                        "due_date": current_date.isoformat(),
+                        "amount": float(lease.pet_policy['monthlyFee']),
+                        "type": "pet_fee",
+                        "status": "scheduled",
+                        "description": f"Monthly pet fee for {current_date.strftime('%B %Y')}"
+                    }
+                    schedule.append(pet_fee_entry)
+                    
+                    # Move to next month
+                    if current_date.month == 12:
+                        current_date = current_date.replace(year=current_date.year + 1, month=1)
+                    else:
+                        current_date = current_date.replace(month=current_date.month + 1)
+            
+        except Exception as e:
+            logger.error(f"Error generating payment schedule: {e}")
+            return []
         
         return schedule
+    
+    def create_renewal_payment_schedule(self, original_lease: Lease, new_start_date: datetime, new_end_date: datetime, new_rent_amount: Optional[float] = None) -> List[Dict[str, Any]]:
+        """Create payment schedule for a renewed lease"""
+        # Create a temporary lease object for renewal
+        renewal_lease = type('RenewalLease', (), {
+            'id': original_lease.id + '_renewal',
+            'start_date': new_start_date,
+            'end_date': new_end_date,
+            'rent_amount': new_rent_amount or original_lease.rent_amount,
+            'security_deposit': 0,  # Usually not required for renewals
+            'late_fee_penalty': original_lease.late_fee_penalty,
+            'grace_period_days': getattr(original_lease, 'grace_period_days', 5),
+            'pet_policy': getattr(original_lease, 'pet_policy', None)
+        })()
+        
+        return self.generate_payment_schedule(renewal_lease)

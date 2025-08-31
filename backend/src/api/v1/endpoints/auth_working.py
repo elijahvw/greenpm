@@ -11,7 +11,7 @@ import uuid
 
 from src.core.database_simple import db
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter(tags=["authentication"])
 security = HTTPBearer()
 
 # JWT Settings
@@ -63,12 +63,12 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) 
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def get_current_user(token_data: Dict[str, Any] = Depends(verify_token)) -> Dict[str, Any]:
     """Get current user from token"""
-    user_id = token_data.get("user_id")
+    user_id = token_data.get("user_id") or token_data.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
     

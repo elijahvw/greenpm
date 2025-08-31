@@ -78,4 +78,28 @@ export const propertyService = {
       data: { imageUrl },
     });
   },
+
+  // Property image management
+  async uploadPropertyImages(propertyId: string, images: File[]): Promise<any> {
+    const formData = new FormData();
+    images.forEach((image) => {
+      formData.append('images', image);
+    });
+
+    const response = await api.post(`/properties/${propertyId}/images`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  async getPropertyImages(propertyId: string): Promise<any> {
+    const response = await api.get(`/properties/${propertyId}/images`);
+    return response.data;
+  },
+
+  async deletePropertyImage(propertyId: string, imageId: string): Promise<void> {
+    await api.delete(`/properties/${propertyId}/images/${imageId}`);
+  },
 };

@@ -76,16 +76,33 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   const formatAddress = (property: Property) => {
-    // Always build complete address from individual fields to ensure city, state, zip are included
-    const street = (property as any).street || (property as any).address_line1 || (property as any).address || '';
-    const unit = (property as any).unit || (property as any).address_line2 || '';
-    const city = (property as any).city || '';
-    const state = (property as any).state || '';
-    const zipCode = (property as any).zipCode || (property as any).zip_code || '';
+    // Handle both nested address object and flat address fields
+    const address = property.address;
     
-    // Build address string from individual components
-    const streetWithUnit = unit ? `${street}, ${unit}` : street;
-    const parts = [streetWithUnit, city, state, zipCode].filter(part => part && part.trim());
+    let street, unit, city, state, zipCode;
+    
+    if (address && typeof address === 'object') {
+      // New nested address structure
+      street = address.street || '';
+      unit = address.unit || '';
+      city = address.city || '';
+      state = address.state || '';
+      zipCode = address.zipCode || '';
+    } else {
+      // Fallback to old flat structure
+      street = (property as any).street || (property as any).address_line1 || (property as any).address || '';
+      unit = (property as any).unit || (property as any).address_line2 || '';
+      city = (property as any).city || '';
+      state = (property as any).state || '';
+      zipCode = (property as any).zipCode || (property as any).zip_code || '';
+    }
+    
+    // Build address string from individual components - ensure all parts are strings
+    const streetWithUnit = unit ? `${String(street)}, ${String(unit)}` : String(street);
+    const parts = [streetWithUnit, city, state, zipCode]
+      .map(part => String(part || ''))
+      .filter(part => part.trim());
+    
     return parts.length > 0 ? parts.join(', ') : 'Address not available';
   };
 

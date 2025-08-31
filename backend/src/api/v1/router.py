@@ -4,17 +4,17 @@ Green PM - Main API Router
 from fastapi import APIRouter
 
 from src.api.v1.endpoints import (
-    auth, 
+    auth_working as auth,
     simple_auth,
     users, 
-    properties, 
+    properties_simple as properties, 
     applications, 
     leases, 
-    maintenance, 
+    maintenance_working as maintenance, 
     payments_simple as payments, 
     messages, 
     admin,
-    dashboard
+    dashboard_working as dashboard
 )
 
 api_router = APIRouter()

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Property } from '../../types/property';
 import { Lease } from '../../types/lease';
 import { leaseService } from '../../services/leaseService';
+import { propertyService } from '../../services/propertyService';
 import Modal from '../Common/Modal';
 import {
   MapPinIcon,
@@ -9,7 +10,13 @@ import {
   CurrencyDollarIcon,
   CalendarIcon,
   TagIcon,
+  PhotoIcon,
+  ArrowUpTrayIcon,
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 interface PropertyViewModalProps {
   isOpen: boolean;
@@ -26,6 +33,68 @@ const PropertyViewModal: React.FC<PropertyViewModalProps> = ({
   onViewLeases,
   onEdit
 }) => {
+  const [images, setImages] = useState<any[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [showImageGallery, setShowImageGallery] = useState(false);
+
+  // Fetch images when modal opens
+  useEffect(() => {
+    if (isOpen && property?.id) {
+      fetchImages();
+    }
+  }, [isOpen, property?.id]);
+
+  const fetchImages = async () => {
+    try {
+      const imageData = await propertyService.getPropertyImages(property.id);
+      setImages(imageData.images || []);
+    } catch (error) {
+      console.error('Error fetching property images:', error);
+    }
+  };
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setUploadingImages(true);
+    try {
+      const fileArray = Array.from(files);
+      const response = await propertyService.uploadPropertyImages(property.id, fileArray);
+      
+      toast.success(`Successfully uploaded ${fileArray.length} image(s)`);
+      
+      // Refresh images
+      fetchImages();
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast.error('Failed to upload images');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleImageDelete = async (imageId: string) => {
+    if (!window.confirm('Are you sure you want to delete this image?')) return;
+
+    try {
+      await propertyService.deletePropertyImage(property.id, imageId);
+      toast.success('Image deleted successfully');
+      fetchImages();
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      toast.error('Failed to delete image');
+    }
+  };
+
+  const nextImage = () => {
+    setSelectedImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   // Use lease data from property instead of separate API call
   const activeLease = property?.current_lease ? {
     id: property.current_lease.id,
@@ -44,16 +113,33 @@ const PropertyViewModal: React.FC<PropertyViewModalProps> = ({
   } : null;
 
   const formatAddress = (property: Property) => {
-    // Always build complete address from individual fields to ensure city, state, zip are included
-    const street = (property as any).street || (property as any).address_line1 || (property as any).address || '';
-    const unit = (property as any).unit || (property as any).address_line2 || '';
-    const city = (property as any).city || '';
-    const state = (property as any).state || '';
-    const zipCode = (property as any).zipCode || (property as any).zip_code || '';
+    // Handle both nested address object and flat address fields
+    const address = property.address;
     
-    // Build address string from individual components
-    const streetWithUnit = unit ? `${street}, ${unit}` : street;
-    const parts = [streetWithUnit, city, state, zipCode].filter(part => part && part.trim());
+    let street, unit, city, state, zipCode;
+    
+    if (address && typeof address === 'object') {
+      // New nested address structure
+      street = address.street || '';
+      unit = address.unit || '';
+      city = address.city || '';
+      state = address.state || '';
+      zipCode = address.zipCode || '';
+    } else {
+      // Fallback to old flat structure
+      street = (property as any).street || (property as any).address_line1 || (property as any).address || '';
+      unit = (property as any).unit || (property as any).address_line2 || '';
+      city = (property as any).city || '';
+      state = (property as any).state || '';
+      zipCode = (property as any).zipCode || (property as any).zip_code || '';
+    }
+    
+    // Build address string from individual components - ensure all parts are strings
+    const streetWithUnit = unit ? `${String(street)}, ${String(unit)}` : String(street);
+    const parts = [streetWithUnit, city, state, zipCode]
+      .map(part => String(part || ''))
+      .filter(part => part.trim());
+    
     return parts.length > 0 ? parts.join(', ') : 'Address not available';
   };
 
@@ -258,6 +344,149 @@ const PropertyViewModal: React.FC<PropertyViewModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Property Images */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+            Property Images
+          </h3>
+
+          {/* Image Upload */}
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+            <div className="text-center">
+              <PhotoIcon className="mx-auto h-8 w-8 text-gray-400" />
+              <div className="mt-2">
+                <label
+                  htmlFor="image-upload"
+                  className="cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                >
+                  <span className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
+                    {uploadingImages ? 'Uploading...' : 'Upload Images'}
+                  </span>
+                  <input
+                    id="image-upload"
+                    name="image-upload"
+                    type="file"
+                    className="sr-only"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e.target.files)}
+                    disabled={uploadingImages}
+                  />
+                </label>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                JPG, JPEG, PNG up to 10MB each
+              </p>
+            </div>
+          </div>
+
+          {/* Image Gallery */}
+          {images.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-gray-700">Uploaded Images ({images.length})</h4>
+              
+              {/* Main Image Display */}
+              {images.length > 0 && (
+                <div className="relative">
+                  <img
+                    src={images[selectedImageIndex]?.image_url}
+                    alt={`Property image ${selectedImageIndex + 1}`}
+                    className="w-full h-64 object-cover rounded-lg cursor-pointer"
+                    onClick={() => setShowImageGallery(true)}
+                  />
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
+                      >
+                        <ChevronLeftIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
+                      >
+                        <ChevronRightIcon className="h-4 w-4" />
+                      </button>
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                        {selectedImageIndex + 1} / {images.length}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Thumbnail Gallery */}
+              <div className="grid grid-cols-4 gap-2">
+                {images.map((image, index) => (
+                  <div key={image.id} className="relative group">
+                    <img
+                      src={image.image_url}
+                      alt={`Property thumbnail ${index + 1}`}
+                      className={`w-full h-20 object-cover rounded cursor-pointer transition-opacity ${
+                        index === selectedImageIndex ? 'ring-2 ring-blue-500' : ''
+                      }`}
+                      onClick={() => setSelectedImageIndex(index)}
+                    />
+                    <button
+                      onClick={() => handleImageDelete(image.id)}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    >
+                      <TrashIcon className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {images.length === 0 && (
+            <div className="text-center py-4">
+              <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" />
+              <p className="mt-2 text-sm text-gray-500">No images uploaded yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* Full Screen Image Gallery Modal */}
+        {showImageGallery && (
+          <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+            <div className="relative max-w-4xl max-h-screen p-4">
+              <button
+                onClick={() => setShowImageGallery(false)}
+                className="absolute top-4 right-4 text-white text-xl hover:text-gray-300 z-10"
+              >
+                ✕
+              </button>
+              <img
+                src={images[selectedImageIndex]?.image_url}
+                alt={`Property image ${selectedImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+              />
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70"
+                  >
+                    <ChevronLeftIcon className="h-6 w-6" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70"
+                  >
+                    <ChevronRightIcon className="h-6 w-6" />
+                  </button>
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-2 rounded">
+                    {selectedImageIndex + 1} / {images.length}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">

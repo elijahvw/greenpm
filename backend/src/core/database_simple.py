@@ -125,6 +125,22 @@ class SimpleDatabase:
             )
         """)
         
+        # Maintenance logs table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS maintenance_logs (
+                id TEXT PRIMARY KEY,
+                request_id TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                action TEXT NOT NULL,
+                old_value TEXT,
+                new_value TEXT,
+                notes TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (request_id) REFERENCES maintenance_requests (id),
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        """)
+        
         # Companies table (for SaaS admin)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS companies (
